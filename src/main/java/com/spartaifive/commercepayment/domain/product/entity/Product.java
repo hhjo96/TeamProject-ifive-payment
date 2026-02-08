@@ -8,7 +8,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -43,18 +42,15 @@ public class Product {
     @NotNull
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @Size(max = 30)
     private ProductStatus status;
 
     @NotNull
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @Size(max = 30)
     private ProductCategory category;
 
     @NotNull
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
     @Size(max = 2048)
     private String description;
 
@@ -65,4 +61,20 @@ public class Product {
     @LastModifiedDate
     @Column()
     private LocalDateTime modifiedAt;
+
+    public Product(
+            String name,
+            Long price,
+            Long stock,
+            ProductStatus status,
+            ProductCategory category,
+            String description
+    ) {
+        this.name = name;
+        this.price = price;
+        this.stock = stock;
+        this.status = status;
+        this.category = category;
+        this.description = description;
+    }
 }
