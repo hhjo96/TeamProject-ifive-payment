@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 2. 토큰 유효성 검증
             if (token != null && jwtTokenProvider.validateToken(token)) {
                 // 3. 토큰에서 사용자 정보 추출
-                String email = jwtTokenProvider.getEmail(token);
+                String email = jwtTokenProvider.getEmailFromToken(token);
 
                 // 4. 인증 객체 생성
                 UsernamePasswordAuthenticationToken authentication =

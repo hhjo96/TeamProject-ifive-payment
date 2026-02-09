@@ -63,7 +63,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
 
                     // 4) 인증 API
-                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup").permitAll()
 
                     // 5) 그 외 API는 인증 필요
                     .requestMatchers("/api/**").authenticated()
