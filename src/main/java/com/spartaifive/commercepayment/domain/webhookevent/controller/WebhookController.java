@@ -1,5 +1,8 @@
-package com.spartaifive.commercepayment.domain.webhookevent;
+package com.spartaifive.commercepayment.domain.webhookevent.controller;
 
+import com.spartaifive.commercepayment.domain.webhookevent.PortOneWebhookVerifier;
+import com.spartaifive.commercepayment.domain.webhookevent.PortoneWebhookPayload;
+import com.spartaifive.commercepayment.domain.webhookevent.service.WebhookEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,7 @@ public class WebhookController {
 
     private final PortOneWebhookVerifier verifier;
     private final ObjectMapper objectMapper;
+    private final WebhookEventService webhookEventService;
 
     @PostMapping(value = "/portone-webhook", consumes = "application/json")
     public ResponseEntity<Void> handlePortoneWebhook(
@@ -67,25 +71,7 @@ public class WebhookController {
                 payload.getPaymentId(),
                 payload.getStatus()
         );
-
-        // TODO (Webhook 처리 - 실습 구현 포인트)
-        //
-        // 1) webhook-id 멱등 처리
-        //    - webhook-id UNIQUE로 이벤트 기록(webhook_event 테이블)
-        //    - 이미 처리된 webhook-id면 즉시 200 반환
-        //
-        // 2) paymentId로 PortOne 결제 조회(SSOT)
-        //    - status / amount 확인
-        //    - 주문 금액과 비교
-        //
-        // 3) 결제/주문 상태 반영(트랜잭션)
-        //    - 결제 상태 전이 검증
-        //      - 막아야 하는 전이 체크 (예: REFUNDED → PAID : 이미 환불된 결제)
-        //    - 재고 차감 후 확정
-        //    - 성공 시 결제=결제완료, 주문=주문완료
-        //
-        // 4) 처리 완료 마킹
-        //    - webhook_event 테이블의 처리 완료 시각 업데이트
+        webhookEventService.handleWebhookEvent(webhookId, payload);
 
         return ResponseEntity.ok().build();
     }
