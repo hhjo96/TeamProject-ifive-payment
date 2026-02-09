@@ -3,6 +3,8 @@ package com.spartaifive.commercepayment.domain.user.controller;
 import com.spartaifive.commercepayment.common.response.DataResponse;
 import com.spartaifive.commercepayment.domain.user.dto.CreateUserRequest;
 import com.spartaifive.commercepayment.domain.user.dto.CreateUserResponse;
+import com.spartaifive.commercepayment.domain.user.dto.LoginRequest;
+import com.spartaifive.commercepayment.domain.user.dto.LoginResponse;
 import com.spartaifive.commercepayment.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,13 @@ public class UserController {
                 .body(DataResponse.success("SUCCESS", res));
     }
     @PostMapping("/login")
+    public ResponseEntity<DataResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse res = userService.login(request);
+        return  ResponseEntity
+                .status(HttpStatus.OK)
+                .body(DataResponse.success("SUCCESS", res));
+    }
+
 
 
 }

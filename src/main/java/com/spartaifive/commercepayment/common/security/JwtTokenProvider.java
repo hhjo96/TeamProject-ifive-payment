@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 
 /**
@@ -22,10 +23,11 @@ public class JwtTokenProvider {
     private final SecretKey secretKey;
 
     // Access Token 만료 시간: 30분
-    private static final long ACCESS_TOKEN_EXPIRATION = 30 * 60 * 1000L;
+    private static final Duration ACCESS_TOKEN_EXPIRATION = Duration.ofMinutes(30);
 
     // Refresh Token 만료 시간: 7일
-    private static final long REFRESH_TOKEN_EXPIRATION = 7 * 24 * 60 * 60 * 1000L;
+    private static final Duration REFRESH_TOKEN_EXPIRATION = Duration.ofDays(7);
+
 
     public JwtTokenProvider(
         @Value("${jwt.secret:commercehub-secret-key-for-demo-please-change-this-in-production-environment}") String secret
@@ -33,10 +35,11 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
+
     //AccessToken: 만료 시간 30분
     public String generateAccessToken(Long userId, String email) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION);
+        Date expiryDate = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION.toMillis());
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
@@ -55,7 +58,7 @@ public class JwtTokenProvider {
      */
     public String generateRefreshToken(Long userId) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION);
+        Date expiryDate = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION.toMillis());
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
@@ -70,7 +73,7 @@ public class JwtTokenProvider {
      * Refresh Token 만료 시간 반환
      * DB 저장용
      */
-    public long getRefreshTokenExpiration() {
+    public Duration getRefreshTokenExpiration() {
         return REFRESH_TOKEN_EXPIRATION;
     }
 
