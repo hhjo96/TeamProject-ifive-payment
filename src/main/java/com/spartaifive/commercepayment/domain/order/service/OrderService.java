@@ -68,7 +68,7 @@ public class OrderService {
             Long quantity = productIdToReq.get(p.getId()).getQuantity();
             if (p.getStock() < quantity) {
                 throw new RuntimeException(String.format(
-                    "주문할려는 상품 %s의 재고(%s)가 주문 갯수(%s)보다 많습니다.",
+                    "주문할려는 상품 %s의 재고(%s)보다 주문 갯수(%s)가 더 많습니다.",
                     p.getName(),
                     p.getStock(),
                     quantity
