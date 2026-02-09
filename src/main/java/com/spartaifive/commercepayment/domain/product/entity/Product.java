@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -28,11 +29,11 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
-    // TODO: 팀원들과 BigDecimal로의 변경을 상의
     @NotNull
-    @Column(nullable = false)
     @Min(0)
-    private Long price;
+    // 이렇게 된다면 99,999,999.99 원이 저희 쇼핑몰의 최대 금액이 됩니다.
+    @Column(precision = 10, scale = 2, nullable = false) 
+    private BigDecimal price;
 
     @NotNull
     @Column(nullable = false)
@@ -64,7 +65,7 @@ public class Product {
 
     public Product(
             String name,
-            Long price,
+            BigDecimal price,
             Long stock,
             ProductStatus status,
             ProductCategory category,
