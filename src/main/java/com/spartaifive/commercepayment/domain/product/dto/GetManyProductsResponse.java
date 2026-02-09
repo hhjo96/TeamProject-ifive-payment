@@ -1,5 +1,7 @@
 package com.spartaifive.commercepayment.domain.product.dto;
 
+import java.math.BigDecimal;
+
 import com.spartaifive.commercepayment.domain.product.entity.Product;
 import com.spartaifive.commercepayment.domain.product.entity.ProductCategory;
 import com.spartaifive.commercepayment.domain.product.entity.ProductStatus;
@@ -12,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class GetManyProductsResponse {
     private final Long productId;
     private final String name;
-    private final Long price;
+    private final BigDecimal price;
     private final Long stock;
     private final ProductStatus status;
     private final ProductCategory category;

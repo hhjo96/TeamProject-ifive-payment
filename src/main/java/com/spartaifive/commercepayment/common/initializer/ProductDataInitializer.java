@@ -13,6 +13,7 @@ import com.spartaifive.commercepayment.domain.product.repository.ProductReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component()
@@ -28,10 +29,10 @@ public class ProductDataInitializer implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
         List<Product> testProducts = List.of(
-                new Product("포카칩", 1000L, 10L, ProductStatus.ON_SALE, ProductCategory.FOOD, "맛있는 감자칩"),
-                new Product("배터리", 2000L, 1L, ProductStatus.ON_SALE, ProductCategory.ELECTRONICS, "AA 배터리"),
-                new Product("요요", 1500L, 5L, ProductStatus.DISCONTINUED ,ProductCategory.TOY, "재밌는 요요"),
-                new Product("모자", 1500L, 3L, ProductStatus.ON_SALE, ProductCategory.CLOTHES, "그냥 모자")
+                new Product("포카칩", new BigDecimal("1000"), 10L, ProductStatus.ON_SALE, ProductCategory.FOOD, "맛있는 감자칩"),
+                new Product("배터리", new BigDecimal("2000"), 1L, ProductStatus.ON_SALE, ProductCategory.ELECTRONICS, "AA 배터리"),
+                new Product("요요", new BigDecimal("1500"), 5L, ProductStatus.DISCONTINUED ,ProductCategory.TOY, "재밌는 요요"),
+                new Product("모자", new BigDecimal("1500"), 3L, ProductStatus.ON_SALE, ProductCategory.CLOTHES, "그냥 모자")
         );
 
         productRepository.saveAll(testProducts);
