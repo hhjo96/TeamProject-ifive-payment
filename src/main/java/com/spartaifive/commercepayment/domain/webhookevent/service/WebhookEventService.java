@@ -20,6 +20,7 @@ public class WebhookEventService {
     @Transactional
     public void handleWebhookEvent(String webhookId, PortoneWebhookPayload payload) {
 
+        //주석 처리 문장들: todo
         // 1) webhook-id 멱등 처리
         //    - webhook-id UNIQUE로 이벤트 기록(webhook_event 테이블)
         //    - 이미 처리된 webhook-id면 즉시 200 반환
