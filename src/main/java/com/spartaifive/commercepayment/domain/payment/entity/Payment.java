@@ -53,8 +53,17 @@ public class Payment {
     @Column(name = "actual_amount", precision = 15, scale = 0)
     private BigDecimal actualAmount;
 
+    @Column(name = "attempted_at")
+    private LocalDateTime attemptedAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Column(name = "paid_at")
     private LocalDateTime paid_at;
+
+    @Column(name = "failed_at")
+    private LocalDateTime failedAt;
 
     @Column(name = "refunded_at")
     private LocalDateTime refunded_at;

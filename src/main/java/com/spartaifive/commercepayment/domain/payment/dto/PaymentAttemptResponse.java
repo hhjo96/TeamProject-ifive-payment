@@ -6,12 +6,14 @@ import java.math.BigDecimal;
 
 public record PaymentAttemptResponse(
         Long paymentId,
+        Long orderId,
         BigDecimal expectedAmount,
         String status
 ) {
     public static PaymentAttemptResponse from(Payment payment) {
         return new PaymentAttemptResponse(
                 payment.getId(),
+                payment.getOrder().getId(),
                 payment.getExpectedAmount(),
                 payment.getPaymentStatus().getStatusCode()
         );
