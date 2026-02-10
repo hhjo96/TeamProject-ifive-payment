@@ -66,4 +66,16 @@ public class UserController {
                 .body(DataResponse.success(String.valueOf(HttpStatus.OK.value()), null));
     }
 
+    /**
+     * 로그아웃 API
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<DataResponse<Void>> logout(
+            @RequestBody RefreshRequest request
+    ) {
+        userService.logout(request.getRefreshToken());
+
+        return ResponseEntity.ok(DataResponse.success(String.valueOf(HttpStatus.OK.value()), null)
+        );
+    }
 }

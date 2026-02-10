@@ -128,5 +128,25 @@ public class UserService {
         // 새 Access Token 발급
         return jwtTokenProvider.createAccessToken(user.getEmail());
     }
+
+    /**
+     * 로그아웃 기능
+     * 정은식
+     */
+    @Transactional
+    public void logout(String refreshTokenValue) {
+
+        UserRefreshToken refreshToken = userRefreshTokenRepository
+                .findByRefreshToken(refreshTokenValue)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.")
+                );
+        // 이미 로그아웃된 토큰이면 통과
+        if (refreshToken.getRevokedAt() != null) {
+            return;
+        }
+        // 로그아웃 처리
+        refreshToken.revoke();
+    }
 }
 
