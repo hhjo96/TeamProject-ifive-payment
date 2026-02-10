@@ -58,4 +58,19 @@ public class Payment {
 
     @Column(name = "refunded_at")
     private LocalDateTime refunded_at;
+
+    public static Payment createAttempt(Order order, BigDecimal expectedAmount) {
+        if (order == null) {
+            throw new IllegalArgumentException("주문이 존재하지 않습니다");
+        }
+        if (expectedAmount == null) {
+            throw new IllegalArgumentException("주문 금액(예상 결제 금액)은 0보다 커야합니다");
+        }
+        Payment payment = new Payment();
+        payment.order = order;
+        payment.expectedAmount = expectedAmount;
+        payment.paymentStatus = PaymentStatus.READY;
+
+        return payment;
+    }
 }
