@@ -13,12 +13,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String userId) throws  RuntimeException{
+    public UserDetailsImpl loadUserByUsername(String userId) throws  RuntimeException{
         User user = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return new UserDetailsImpl(user);
     }
-    public UserDetails loadUserByEmail(String email) throws  RuntimeException{
+    public UserDetailsImpl loadUserByEmail(String email) throws  RuntimeException{
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자 못찾음"));
 

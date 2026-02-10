@@ -15,4 +15,5 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     @Modifying
     @Query("UPDATE Token t SET t.isLogout = true WHERE t.user.id = :userId")
     void logoutAllByUserId(@Param("userId") Long userId);
+
 }

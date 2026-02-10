@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
@@ -18,6 +19,9 @@ public class User {
     private String password;
     private String phone;
 
+    @Setter
+    @Column(unique = true, nullable = false)
+    private String customerUid;
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "membership_id")
 //    private MembershipGrade membershipGrade;

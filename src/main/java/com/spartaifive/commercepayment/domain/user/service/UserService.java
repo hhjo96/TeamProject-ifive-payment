@@ -5,13 +5,11 @@ import com.spartaifive.commercepayment.common.auth.UserDetailsServiceImpl;
 import com.spartaifive.commercepayment.common.security.JwtTokenProvider;
 import com.spartaifive.commercepayment.domain.token.entity.Token;
 import com.spartaifive.commercepayment.domain.token.repository.TokenRepository;
-import com.spartaifive.commercepayment.domain.user.dto.CreateUserRequest;
-import com.spartaifive.commercepayment.domain.user.dto.CreateUserResponse;
-import com.spartaifive.commercepayment.domain.user.dto.LoginRequest;
-import com.spartaifive.commercepayment.domain.user.dto.LoginResponse;
+import com.spartaifive.commercepayment.domain.user.dto.*;
 import com.spartaifive.commercepayment.domain.user.entity.User;
 import com.spartaifive.commercepayment.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,13 +40,18 @@ public class UserService {
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()),
                 request.getPhone()
+
         );
+        String customerUid = "CUST_" + Math.abs(request.getEmail().hashCode());
+        user.setCustomerUid(customerUid);
+
         User userSaved = userRepository.save(user);
         return new CreateUserResponse(
                 userSaved.getId(),
                 userSaved.getName(),
                 userSaved.getEmail(),
-                userSaved.getPhone()
+                userSaved.getPhone(),
+                userSaved.getCustomerUid()
         );
     }
 
@@ -81,7 +84,49 @@ public class UserService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                accessToken
+                accessToken,
+                refreshToken
         );
+    }
+
+    @Transactional(readOnly = true)
+    public MeResponse getMe(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new IllegalStateException("사용자가 없음")
+        );
+
+        return new MeResponse(
+                user.getCustomerUid(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone(),
+                user.getTotal_point()
+
+        );
+    }
+
+    @Transactional
+    public void logout(Long userId) {
+        tokenRepository.logoutAllByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public TokenRefreshResponse refreshToken(String refreshToken) {
+
+        // DB에서 Refresh Token 조회
+        Token token = tokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("토큰이 존재하지 않습니다."));
+
+        // Refresh Token 유효성 검증 (로그아웃 여부, 만료 여부)
+        if (!token.isValid()) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다. 다시 로그인해주세요.");
+        }
+
+        // 새 Access Token 생성
+        User user = token.getUser();
+        String newAccessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail());
+
+
+        return new TokenRefreshResponse(newAccessToken, refreshToken);
     }
 }

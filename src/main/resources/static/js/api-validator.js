@@ -20,6 +20,26 @@ function validateApiResponse(endpointKey, response, headers = null) {
     }
 
     const errors = [];
+    //
+    let actualData = response;
+    let isApiResponseWrapper = false;
+
+    if (response &&
+        typeof response === 'object' &&
+        'success' in response &&
+        'code' in response &&
+        'data' in response) {
+        isApiResponseWrapper = true;
+
+        const bodySchema = contract.response?.body;
+        const hasWrapperFields = bodySchema?.fields?.some(f =>
+            f.name === 'success' || f.name === 'code' || f.name === 'data'
+        );
+
+        if (!hasWrapperFields) {
+            actualData = response.data;
+        }
+    }
 
     // ========================================
     // Response Body 검증
@@ -29,13 +49,13 @@ function validateApiResponse(endpointKey, response, headers = null) {
 
         // Array 타입 검증
         if (bodySchema.type === 'array') {
-            if (!Array.isArray(response)) {
+            if (!Array.isArray(actualData)) {
                 errors.push(`응답이 배열이어야 하지만 ${typeof response} 타입입니다.`);
             } else if (bodySchema.items) {
                 // 배열 아이템 필드 검증 (첫 번째 아이템만 체크)
                 if (response.length > 0) {
                     bodySchema.items.forEach(fieldDef => {
-                        validateField(response[0], fieldDef, errors, '배열 첫 번째 아이템');
+                        validateField(actualData[0], fieldDef, errors, '배열 첫 번째 아이템');
                     });
                 }
             }
@@ -43,7 +63,7 @@ function validateApiResponse(endpointKey, response, headers = null) {
         // Object 타입 검증
         else if (bodySchema.fields) {
             bodySchema.fields.forEach(fieldDef => {
-                validateField(response, fieldDef, errors);
+                validateField(actualData, fieldDef, errors);
             });
         }
     }

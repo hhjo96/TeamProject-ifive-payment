@@ -8,12 +8,14 @@ public class CreateUserResponse {
     private final String name;
     private final String email;
     private final String phone;
+    private final String customerUid;
 
-    public CreateUserResponse(Long id, String name, String email, String phone)
+    public CreateUserResponse(Long id, String name, String email, String phone,  String customerUid)
     {
         this.id = id;
         this.name = name;
         this.email = email;
         this.phone = phone;
+        this.customerUid = customerUid;
     }
 }

@@ -1,18 +1,18 @@
 package com.spartaifive.commercepayment.common.security;
 
+import com.spartaifive.commercepayment.common.auth.UserDetailsImpl;
+import com.spartaifive.commercepayment.common.auth.UserDetailsServiceImpl;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * JWT 토큰 인증 필터
@@ -25,11 +25,14 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserDetailsServiceImpl userDetailsServiceImpl) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
+
 
     @Override
     protected void doFilterInternal(
@@ -47,12 +50,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 3. 토큰에서 사용자 정보 추출
                 String email = jwtTokenProvider.getEmailFromToken(token);
 
+                UserDetailsImpl userDetails =
+                        userDetailsServiceImpl.loadUserByEmail(email);
+
                 // 4. 인증 객체 생성
                 UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            email,
+                            userDetails,
                         null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                        userDetails.getAuthorities()
                     );
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -60,9 +66,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // 5. SecurityContext에 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+        } catch (ExpiredJwtException e) {
+            writeUnauthorized(response, "TOKEN_EXPIRED", "토큰이 만료되었습니다.");
+            return;
         } catch (Exception e) {
-            logger.error("JWT 인증 실패", e);
-            // TODO: 구현 - 적절한 에러 응답
+            // 예: SignatureException, MalformedJwtException, IllegalArgumentException 등
+            SecurityContextHolder.clearContext();
+            writeUnauthorized(response, "TOKEN_INVALID", "유효하지 않은 토큰입니다.");
+            return;
         }
 
         filterChain.doFilter(request, response);
@@ -80,5 +91,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         return null;
+    }
+
+    private void writeUnauthorized(HttpServletResponse response, String code, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(
+                "{\"code\":\"" + code + "\",\"message\":\"" + message + "\",\"status\":401}"
+        );
     }
 }

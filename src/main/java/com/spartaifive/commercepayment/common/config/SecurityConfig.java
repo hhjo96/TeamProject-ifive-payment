@@ -1,6 +1,7 @@
 package com.spartaifive.commercepayment.common.config;
 
 import com.spartaifive.commercepayment.common.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,13 +43,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF 비활성화 (JWT 사용 시 불필요)
-            .csrf(AbstractHttpConfigurer::disable)
+                //세션 차단
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Session 사용 안 함 (Stateless)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+                //  기본 로그인 인증 꺼서 302 방지
+                .formLogin(AbstractHttpConfigurer::disable)
+
+                // 인증/인가 실패를 JSON으로 고정
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write(
+                                    "{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\",\"status\":401}"
+                            );
+                        })
+                        .accessDeniedHandler((request, response, ForbiddenException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write(
+                                    "{\"code\":\"FORBIDDEN\",\"message\":\"권한이 없습니다.\",\"status\":403}"
+                            );
+                        })
+                )
 
             // 요청 권한 설정
             .authorizeHttpRequests(authorize -> authorize
@@ -64,7 +82,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/portone-webhook").permitAll()
 
                     // 4) 인증 API
-                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup", "/api/auth/refresh").permitAll()
 
                     // 5) 그 외 API는 인증 필요
                     .requestMatchers("/api/**").authenticated()

@@ -42,4 +42,15 @@ public class Token {
     public void logout() {
         this.isLogout = true;
     }
+
+    //토큰이 만료되었느지 확인
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(this.expiredAt);
+    }
+
+    public boolean isValid() {
+        // Boolean 타입이므로 null 체크 추가
+        boolean loggedOut = (this.isLogout != null && this.isLogout);
+        return !loggedOut && !isExpired();
+    }
 }
