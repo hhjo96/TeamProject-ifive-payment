@@ -58,8 +58,8 @@ api:
               description: 로그인한 사용자 이메일
 
     register:
-      url:
-      method:
+      url: /api/auth/signup
+      method: POST
       description: 회원가입
       request:
         fields:
@@ -88,8 +88,8 @@ api:
               description: 에러 메시지 (실패 시)
 
     get-current-user:
-      url:
-      method:
+      url: /api/auth/me
+      method: GET
       description: 현재 로그인한 사용자 정보 조회
       response:
         body:
