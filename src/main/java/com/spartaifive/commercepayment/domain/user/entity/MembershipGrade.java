@@ -21,4 +21,9 @@ public class MembershipGrade {
 
     @Column(name = "membership_rate", nullable = false)
     private Long rate; // 적립률
+
+    public MembershipGrade(String name, Long rate) {
+        this.name = name;
+        this.rate = rate;
+    }
 }
