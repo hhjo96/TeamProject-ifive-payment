@@ -2,6 +2,8 @@ package com.spartaifive.commercepayment.domain.payment.controller;
 
 import com.spartaifive.commercepayment.common.response.DataResponse;
 import com.spartaifive.commercepayment.domain.order.service.OrderService;
+import com.spartaifive.commercepayment.domain.payment.dto.ConfirmPaymentRequest;
+import com.spartaifive.commercepayment.domain.payment.dto.ConfirmPaymentResponse;
 import com.spartaifive.commercepayment.domain.payment.dto.PaymentAttemptRequest;
 import com.spartaifive.commercepayment.domain.payment.dto.PaymentAttemptResponse;
 import com.spartaifive.commercepayment.domain.payment.service.PaymentService;
@@ -23,11 +25,19 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final OrderService orderService;
 
-    @PostMapping
+    @PostMapping("/attempt")
     public ResponseEntity<DataResponse<PaymentAttemptResponse>> createPayment(
             @AuthenticationPrincipal User user, @Valid @RequestBody PaymentAttemptRequest request) {
         PaymentAttemptResponse response = paymentService.createPayment(user.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(DataResponse.success(HttpStatus.CREATED.name(), response));
+    }
+
+    @PostMapping("/confirm")
+    public ResponseEntity<DataResponse<ConfirmPaymentResponse>> confirmPayment(
+            @AuthenticationPrincipal User user, @Valid @RequestBody ConfirmPaymentRequest request) {
+        ConfirmPaymentResponse response = paymentService.confirmPayment(user.getId(), request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(DataResponse.success(HttpStatus.OK.name(), response));
     }
 }
