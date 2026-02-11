@@ -86,7 +86,11 @@ public class UserService {
         userRefreshTokenRepository.deleteByUser(user);
 
         // 리프레시 토큰 생성
-        String refreshTokenValue = jwtTokenProvider.createRefreshToken(user.getEmail());
+        String refreshTokenValue = jwtTokenProvider.createRefreshToken(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
 
         // Refresh Token 생성 (정적 팩토리 메서드 사용)
         UserRefreshToken refreshToken = UserRefreshToken.create(
@@ -98,7 +102,11 @@ public class UserService {
         userRefreshTokenRepository.save(refreshToken);
 
         // AccessToken 생성 -> 반환
-        return jwtTokenProvider.createAccessToken(user.getEmail());
+        return jwtTokenProvider.createAccessToken(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
     }
 
     /**
@@ -127,7 +135,11 @@ public class UserService {
 
         User user = refreshToken.getUser();
         // 새 Access Token 발급
-        return jwtTokenProvider.createAccessToken(user.getEmail());
+        return jwtTokenProvider.createAccessToken(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
     }
 
     /**

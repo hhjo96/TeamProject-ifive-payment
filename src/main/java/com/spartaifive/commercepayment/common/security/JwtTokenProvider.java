@@ -33,12 +33,18 @@ public class JwtTokenProvider {
     /**
      * Access TOken 생성
      */
-    public String createAccessToken(String email) {
+    public String createAccessToken(
+            Long userId,
+            String userName,
+            String email
+    ) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + accessTokenValidityMs);
 
         return Jwts.builder()
             .subject(email)
+            .claim("userName", userName)
+            .claim("userId", userId)
             .issuedAt(now)
             .expiration(validity)
             .signWith(secretKey)
@@ -48,29 +54,51 @@ public class JwtTokenProvider {
     /**
      * Refresh Token 생성
      */
-    public String createRefreshToken(String email) {
+    public String createRefreshToken(
+            Long userId,
+            String userName,
+            String email
+    ) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + refreshTokenValidityMs);
 
         return Jwts.builder()
                 .subject(email)
+                .claim("userName", userName)
+                .claim("userId", userId)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(secretKey)
                 .compact();
     }
 
+    private Claims getClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
     /**
      * JWT 토큰에서 사용자 이메일 추출
      */
     public String getEmail(String token) {
-        Claims claims = Jwts.parser()
-            .verifyWith(secretKey)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+        return getClaims(token).getSubject();
+    }
 
-        return claims.getSubject();
+    /**
+     * JWT 토큰에서 사용자 이름 추출
+     */
+    public String getName(String token) {
+        return getClaims(token).get("userName", String.class);
+    }
+
+    /**
+     * JWT 토큰에서 user id 추출
+     */
+    public Long getUserId(String token) {
+        return getClaims(token).get("userId", Long.class);
     }
 
     /**

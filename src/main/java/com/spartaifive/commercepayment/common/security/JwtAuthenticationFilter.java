@@ -1,5 +1,6 @@
 package com.spartaifive.commercepayment.common.security;
 
+import com.spartaifive.commercepayment.common.auth.UserDetailsImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,10 +59,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 토큰이 있고 유효한 경우만 인증 처리
         if (token != null) {
             String email = jwtTokenProvider.getEmail(token);
+            String name = jwtTokenProvider.getName(token);
+            Long userId = jwtTokenProvider.getUserId(token);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            email,
+                            new UserDetailsImpl(
+                                    userId,
+                                    email,
+                                    name,
+                                    null
+                            ),
                             null,
                             Collections.singletonList(
                                     new SimpleGrantedAuthority("ROLE_USER")

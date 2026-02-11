@@ -4,6 +4,7 @@ import com.spartaifive.commercepayment.domain.user.entity.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,30 +14,53 @@ import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
-public class UserDetailsImpl implements UserDetails {
+public class UserDetailsImpl implements UserDetails, CredentialsContainer {
 
-    private final User user;
+    // private final User user;
+    private Long userId;
+    private String email;
+    private String name;
+    private String password;
+
+    public UserDetailsImpl(User user) {
+        this.userId = user.getId();
+        this.email = user.getEmail();
+        this.name = user.getName();
+        this.password = user.getPassword();
+    }
+
+    public UserDetailsImpl(
+        Long userId,
+        String email,
+        String name,
+        String password
+    ) {
+        this.userId = userId;
+        this.email = email;
+        this.name = name;
+        this.password = password;
+    }
 
     /**
      * 사용자 ID 반환
      * Controller, Service에서 활용
      */
     public Long getUserId() {
-        return user.getId();
+        return this.userId;
     }
 
     /**
      * 사용자 이메일 반환
      */
     public String getEmail() {
-        return user.getEmail();
+        return this.email;
     }
 
     /**
      * 사용자 이름 반환
      */
     public String getName() {
-        return user.getName();
+        return this.name;
     }
 
     // 현재는 권한 없음 (필요 시 추가)
@@ -47,12 +71,12 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail(); // 이메일이 아이디로 사용
+        return this.email; // 이메일이 아이디로 사용
     }
 
     //계정 만료 여부
@@ -77,5 +101,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public void eraseCredentials() {
+        this.password = null;
     }
 }
