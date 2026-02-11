@@ -115,6 +115,8 @@ public class Payment {
         this.paymentStatus = PaymentStatus.PAID;
         this.paidAt = paidAt != null ? paidAt : LocalDateTime.now(); // portone paidAt이 없으면 씌우기
         this.updatedAt = LocalDateTime.now();
+
+        return this;
     }
 
     public Payment fail(String portonePaymentId) {
