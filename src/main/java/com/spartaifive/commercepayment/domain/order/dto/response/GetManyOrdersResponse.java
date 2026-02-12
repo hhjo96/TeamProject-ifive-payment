@@ -1,4 +1,4 @@
-package com.spartaifive.commercepayment.domain.order.dto;
+package com.spartaifive.commercepayment.domain.order.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

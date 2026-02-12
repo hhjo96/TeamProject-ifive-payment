@@ -1,8 +1,8 @@
 package com.spartaifive.commercepayment.domain.order.service;
 
-import com.spartaifive.commercepayment.domain.order.dto.AddOrderRequest;
-import com.spartaifive.commercepayment.domain.order.dto.GetManyOrdersResponse;
-import com.spartaifive.commercepayment.domain.order.dto.GetOrderResponse;
+import com.spartaifive.commercepayment.domain.order.dto.request.AddOrderRequest;
+import com.spartaifive.commercepayment.domain.order.dto.response.GetManyOrdersResponse;
+import com.spartaifive.commercepayment.domain.order.dto.response.GetOrderResponse;
 import com.spartaifive.commercepayment.domain.order.entity.Order;
 import com.spartaifive.commercepayment.domain.order.entity.OrderProduct;
 import com.spartaifive.commercepayment.domain.order.repository.OrderProductRepository;

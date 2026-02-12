@@ -1,4 +1,4 @@
-package com.spartaifive.commercepayment.domain.order.dto;
+package com.spartaifive.commercepayment.domain.order.dto.request;
 
 import java.util.List;
 

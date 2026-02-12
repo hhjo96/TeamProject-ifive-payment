@@ -3,9 +3,9 @@ package com.spartaifive.commercepayment.domain.order.controller;
 import com.spartaifive.commercepayment.common.auth.AuthUtil;
 import com.spartaifive.commercepayment.common.auth.UserDetailsImpl;
 import com.spartaifive.commercepayment.common.response.DataResponse;
-import com.spartaifive.commercepayment.domain.order.dto.AddOrderRequest;
-import com.spartaifive.commercepayment.domain.order.dto.GetManyOrdersResponse;
-import com.spartaifive.commercepayment.domain.order.dto.GetOrderResponse;
+import com.spartaifive.commercepayment.domain.order.dto.request.AddOrderRequest;
+import com.spartaifive.commercepayment.domain.order.dto.response.GetManyOrdersResponse;
+import com.spartaifive.commercepayment.domain.order.dto.response.GetOrderResponse;
 import com.spartaifive.commercepayment.domain.order.service.OrderService;
 
 import jakarta.validation.Valid;
@@ -36,10 +36,11 @@ public class OrderController {
         Long userId = AuthUtil.getCurrentUserId();
         GetOrderResponse res = orderService.addOrder(req, userId);
 
-        // TODO: 무슨 코드를 넣을지 잘 모르겠네요
         return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(DataResponse.success("SUCCESS", res));
+            .status(HttpStatus.CREATED)
+            .body(DataResponse.success(
+                        String.valueOf(HttpStatus.CREATED.value()), 
+                        res));
     }
 
     @GetMapping("/api/orders/{orderId}")
@@ -49,10 +50,9 @@ public class OrderController {
         Long userId = AuthUtil.getCurrentUserId();
         GetOrderResponse res = orderService.getOrder(orderId, userId);
 
-        // TODO: 무슨 코드를 넣을지 잘 모르겠네요
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(DataResponse.success("SUCCESS", res));
+                .body(DataResponse.success(String.valueOf(HttpStatus.OK.value()), res));
     }
 
     @GetMapping("/api/orders")
@@ -60,9 +60,8 @@ public class OrderController {
         Long userId = AuthUtil.getCurrentUserId();
         List<GetManyOrdersResponse> res = orderService.getManyOrders(userId);
 
-        // TODO: 무슨 코드를 넣을지 잘 모르겠네요
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(DataResponse.success("SUCCESS", res));
+                .body(DataResponse.success(String.valueOf(HttpStatus.OK.value()), res));
     }
 }
