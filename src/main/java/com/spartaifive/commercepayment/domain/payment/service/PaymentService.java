@@ -1,6 +1,7 @@
 package com.spartaifive.commercepayment.domain.payment.service;
 
 import com.spartaifive.commercepayment.common.external.portone.PortOneCancelRequest;
+import com.spartaifive.commercepayment.common.external.portone.PortOneCancelResponse;
 import com.spartaifive.commercepayment.common.external.portone.PortOneClient;
 import com.spartaifive.commercepayment.common.external.portone.PortOnePaymentResponse;
 import com.spartaifive.commercepayment.domain.order.entity.Order;
@@ -16,7 +17,12 @@ import com.spartaifive.commercepayment.domain.payment.entity.Payment;
 import com.spartaifive.commercepayment.domain.payment.entity.PaymentStatus;
 import com.spartaifive.commercepayment.domain.payment.repository.PaymentRepository;
 import com.spartaifive.commercepayment.domain.product.entity.Product;
+import com.spartaifive.commercepayment.domain.refund.entity.Refund;
+import com.spartaifive.commercepayment.domain.refund.entity.RefundStatus;
+import com.spartaifive.commercepayment.domain.refund.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +36,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final PortOneClient portOneClient;
+    private final RefundRepository refundRepository;
 
     /**
      * 결제 시도(Attempt) 생성
@@ -234,7 +242,7 @@ public class PaymentService {
         }
 
         // merchantId로 결제 조회
-        Payment payment = paymentRepository.findByMerchantPaymentId(paymentId).orElseThrow(
+        Payment payment = paymentRepository.findByMerchantPaymentIdForUpdate(paymentId).orElseThrow(
                 () -> new IllegalStateException("환불 가능한 결제가 없습니다 paymentId=" + paymentId)
         );
 
@@ -246,9 +254,27 @@ public class PaymentService {
         // 주문 가져오기
         Order order = payment.getOrder();
 
-        // 이미 환불처리 된 결제는 멱등 처리
-        if (payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
-            return RefundResponse.from(payment, order);
+        // 환불 테이블 기준 멱등 처리
+        Optional<Refund> exOpt = refundRepository.findByPayment(payment);
+        if (exOpt.isPresent()) {
+            Refund existing = exOpt.get();
+            if (existing.getStatus() == RefundStatus.COMPLETED) {
+                if (payment.getPaymentStatus() != PaymentStatus.REFUNDED) {
+                    payment.refund(existing.getReason());
+                    paymentRepository.save(payment);
+                }
+                if (order.getStatus() != OrderStatus.REFUNDED) {
+                    order.setStatusToRefund();
+                    orderRepository.save(order);
+                }
+                return RefundResponse.from(payment, order);
+            }
+            throw new IllegalStateException("이미 환불 이력이 존재합니다 status=" + existing.getStatus());
+        }
+
+        // 주문 상태가 PAID 인지 확인
+        if (order.getStatus() != OrderStatus.COMPLETED) {
+            throw new IllegalStateException("환불 가능한 주문 상태가 아닙니다 status=" + order.getStatus());
         }
 
         // 결제 상태가 PAID 인지 확인
@@ -256,13 +282,42 @@ public class PaymentService {
             throw new IllegalStateException("환불 가능한 결제 상태가 아닙니다 status=" + payment.getPaymentStatus());
         }
 
+        // 전액 환불 금액 스냅샷
+        BigDecimal refundAmount = payment.getActualAmount() != null ? payment.getActualAmount() : payment.getExpectedAmount();
+        if (refundAmount == null) {
+            throw new IllegalStateException("환불 금액을 확인할 수 없습니다 paymentId=" + payment.getId());
+        }
+
+        // Refund 레코드 생성/갱신 REQUESTED
+        Refund refund = Refund.request(payment, refundAmount, request.reason());
+        refundRepository.save(refund);
+
         // PortOne Cancel 호출해서 전액 환불 (fullCancel)
-        PortOneCancelRequest cancelRequest = PortOneCancelRequest.fullCancel(request.reason());
-        PortOnePaymentResponse cancelResponse = portOneClient.cancelPayment(payment.getMerchantPaymentId(), cancelRequest);
+        PortOneCancelResponse cancelResponse;
+        try {
+            PortOneCancelRequest cancelRequest = PortOneCancelRequest.fullCancel(request.reason());
+            cancelResponse = portOneClient.cancelPayment(payment.getMerchantPaymentId(), cancelRequest);
+        } catch (Exception e) {
+            refund.fail("PortOne 환불 API 호출 실패: " + e.getMessage());
+            refundRepository.save(refund);
+            throw e;
+        }
 
         // portOne 응답 검증 (취소 완료 확인)
-        if (cancelResponse == null) {
-            throw new IllegalStateException("PortOne 환불 응답이 없습니다 paymentId=" + payment.getId());
+        if (cancelResponse == null || !cancelResponse.isSucceeded()) {
+            String status = (cancelResponse == null || cancelResponse.cancellation() == null)
+                    ? null : cancelResponse.cancellation().status();
+            refund.fail("PortOne 환불 실패 status=" + status);
+            refundRepository.save(refund);
+            throw new IllegalStateException("PortOne 환불 실패 status=" + status);
+        }
+
+        // 전액 환불 금액 검증
+        BigDecimal cancelAmount = cancelResponse.cancelledTotalAmount();
+        if (cancelAmount == null || cancelAmount.compareTo(refundAmount) != 0) {
+            refund.fail("PortOne 환불 금액 불일치 cancelled=" + cancelAmount + ", expected=" + refundAmount);
+            refundRepository.save(refund);
+            throw new IllegalStateException("PortOne 환불 금액 불일치 cancelled=" + cancelAmount+ ", expected=" + refundAmount);
         }
 
         // 결제 상태 전이: REFUNDED
@@ -279,6 +334,9 @@ public class PaymentService {
             Long qty = op.getQuantity();
             product.increaseStock(qty);
         });
+
+        refund.complete();
+        refundRepository.save(refund);
 
         return RefundResponse.from(refundedPayment, refundedOrder);
     }

@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -32,17 +31,20 @@ public class Refund {
     private Payment payment;
 
     @Column(name = "refund_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal refundAmount;
+    private BigDecimal amount;
 
     @Column(name = "refundReason", nullable = false, length = 100)
-    private String refundReason;
+    private String reason;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private RefundStatus refundStatus;
+    private RefundStatus status;
 
-    @Column(name = "refund_at")
-    private LocalDateTime refundAt;
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
+
+    @Column(name = "fail_reason", length = 100)
+    private String failReason;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -65,18 +67,22 @@ public class Refund {
 
         Refund refund = new Refund();
         refund.payment = payment;
-        refund.refundAmount = refundAmount;
-        refund.refundReason = refundReason;
-        refund.refundStatus = RefundStatus.REQUESTED;
+        refund.amount = refundAmount;
+        refund.reason = refundReason;
+        refund.status = RefundStatus.REQUESTED;
 
         return refund;
     }
 
     public void complete() {
-        this.refundStatus = RefundStatus.COMPLETED;
-        this.refundAt = LocalDateTime.now();
+        this.status = RefundStatus.COMPLETED;
+        this.processedAt = LocalDateTime.now();
     }
 
-    public void fail()
+    public void fail(String failReason) {
+        this.status = RefundStatus.FAILED;
+        this.failReason = failReason;
+        this.processedAt = LocalDateTime.now();
+    }
 
 }
