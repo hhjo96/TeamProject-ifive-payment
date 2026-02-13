@@ -7,8 +7,8 @@ import com.spartaifive.commercepayment.domain.product.entity.ProductStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.spartaifive.commercepayment.domain.product.dto.GetManyProductsResponse;
-import com.spartaifive.commercepayment.domain.product.dto.GetProductResponse;
+import com.spartaifive.commercepayment.domain.product.dto.response.GetManyProductsResponse;
+import com.spartaifive.commercepayment.domain.product.dto.response.GetProductResponse;
 import com.spartaifive.commercepayment.domain.product.entity.Product;
 import com.spartaifive.commercepayment.domain.product.repository.ProductRepository;
 

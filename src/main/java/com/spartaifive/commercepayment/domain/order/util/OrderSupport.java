@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.spartaifive.commercepayment.domain.order.dto.AddOrderRequest;
+import com.spartaifive.commercepayment.domain.order.dto.request.AddOrderRequest;
 
 public class OrderSupport {
     /**
