@@ -26,7 +26,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest()
-@TestPropertySource(locations = "/test.properties")
+@TestPropertySource(properties = {"spring.config.additional-location= classpath:test-h2-basic.yml"})
 public class OrderServiceTest {
     @Autowired
     private ProductRepository productRepository;
@@ -62,7 +62,8 @@ public class OrderServiceTest {
                 new Product("배터리", new BigDecimal("2000"), 1L, ProductStatus.ON_SALE, ProductCategory.ELECTRONICS, "AA 배터리"),
                 new Product("요요", new BigDecimal("1500"), 5L, ProductStatus.DISCONTINUED ,ProductCategory.TOY, "재밌는 요요"),
                 new Product("모자", new BigDecimal("1500"), 3L, ProductStatus.ON_SALE, ProductCategory.CLOTHES, "그냥 모자"),
-                new Product("손수건", new BigDecimal("3000"), 3L, ProductStatus.OUT_OF_STOCK, ProductCategory.CLOTHES, "예쁜 손수거"),
+                // 일부러 손수건은 재고가 다 떨어져 있지 않은 상태에서 OUT_OF_STOCK입니다.
+                new Product("손수건", new BigDecimal("3000"), 3L, ProductStatus.OUT_OF_STOCK, ProductCategory.CLOTHES, "예쁜 손수거"), 
                 new Product("새우깡", new BigDecimal("1200"), 0L, ProductStatus.OUT_OF_STOCK, ProductCategory.FOOD, "새우맛 과자")
         );
 
