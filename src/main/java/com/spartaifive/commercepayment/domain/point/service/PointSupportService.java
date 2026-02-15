@@ -161,7 +161,7 @@ public class PointSupportService {
         return point;
     }
 
-    public List<PointDecrease> decreasePoints(
+    public static List<PointDecrease> decreasePoints(
             List<Point> points,
             BigDecimal pointToSpend
     ) {
