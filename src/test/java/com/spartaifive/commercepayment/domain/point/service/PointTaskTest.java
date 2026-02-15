@@ -76,7 +76,7 @@ public class PointTaskTest {
     }
 
     @RepeatedTest(2)
-    public void test() {
+    public void 기본적인_포인트_멤버쉽_규칙() {
         // ===================
         // GIVEN
         // ===================
@@ -211,6 +211,117 @@ public class PointTaskTest {
                 assertThat(pointService.getUserPoints(user2.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(500));
                 assertThat(pointService.getUserPoints(user3.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(3000));
                 assertThat(pointService.getUserPoints(user4.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(7500));
+
+                tx.commit();
+            } finally {
+                em.close();
+            }
+        }
+    }
+
+    @RepeatedTest(2)
+    public void 포인트는_환불_기간_이전거는_포함되지_않는다() {
+        // 8일 전으로 시간 여행
+        LocalDateTime time8DaysAgo = LocalDateTime.now().minusDays(8);
+
+        Mockito.when(clock.instant()).thenReturn(time8DaysAgo.atZone(ZoneId.systemDefault()).toInstant());
+        Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+
+        // user 생성
+        User user1;
+
+        {
+            MembershipGrade membership = membershipGradeRepository.findByName("NORMAL").get();
+            EntityManager em = emf.createEntityManager();
+
+            try {
+                EntityTransaction tx = em.getTransaction();
+                tx.begin();
+
+                user1 = User.create(
+                        membership,
+                        "김희찬",
+                        "user1@gmail.com",
+                        passwordEncoder.encode("1234qwer"),
+                        "01011112222"
+                );
+
+                em.persist(user1);
+                em.flush();
+
+                tx.commit();
+            } finally {
+                em.close();
+            }
+        }
+
+        // 가짜 구매 내역 생성
+        var orderPaymentOld = createFakePurchase(user1, BigDecimal.valueOf(1000), time8DaysAgo);
+
+        // 포인트 생성
+        pointService.createPointAfterPaymentConfirm(
+                orderPaymentOld.getSecond().getId(),
+                orderPaymentOld.getFirst().getId(),
+                user1.getId()
+        );
+
+        LocalDateTime timeNow = LocalDateTime.now();
+
+        // 현재로 돌아옴
+        Mockito.when(clock.instant()).thenReturn(timeNow.atZone(ZoneId.systemDefault()).toInstant());
+        Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+
+        // 포인트 계산
+        pointTasks.calculateMembershipAndReadyPoints();
+
+        // 포인트와 멤버쉽이 맞는지 확인
+        {
+            EntityManager em = emf.createEntityManager();
+            try {
+                EntityTransaction tx = em.getTransaction();
+                tx.begin();
+
+                user1 = em.find(User.class, Long.valueOf(user1.getId()));
+
+                assertThat(user1.getMembershipGrade().getName()).isEqualTo(membershipGradeRepository.findByName("NORMAL").get().getName());
+                assertThat(pointService.getUserPoints(user1.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(10));
+
+                tx.commit();
+            } finally {
+                em.close();
+            }
+        }
+
+        // 현재 가짜 구매 내역 생성
+        var orderPaymentNew = createFakePurchase(user1, BigDecimal.valueOf(150000), timeNow);
+
+        // 포인트 생성
+        pointService.createPointAfterPaymentConfirm(
+                orderPaymentNew.getSecond().getId(),
+                orderPaymentNew.getFirst().getId(),
+                user1.getId()
+        );
+
+        LocalDateTime time6DaysLater = LocalDateTime.now().plusDays(6);
+
+        // 6일후 미래로 이동
+        Mockito.when(clock.instant()).thenReturn(time6DaysLater.atZone(ZoneId.systemDefault()).toInstant());
+        Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+
+        // 포인트 계산
+        pointTasks.calculateMembershipAndReadyPoints();
+
+        // 포인트와 멤버쉽이 맞는지 확인
+        {
+            EntityManager em = emf.createEntityManager();
+            try {
+                EntityTransaction tx = em.getTransaction();
+                tx.begin();
+
+                user1 = em.find(User.class, Long.valueOf(user1.getId()));
+
+                assertThat(user1.getMembershipGrade().getName()).isEqualTo(membershipGradeRepository.findByName("NORMAL").get().getName());
+                assertThat(pointService.getUserPoints(user1.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(10));
 
                 tx.commit();
             } finally {
