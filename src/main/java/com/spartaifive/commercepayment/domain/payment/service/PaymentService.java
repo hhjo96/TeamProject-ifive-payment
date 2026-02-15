@@ -257,7 +257,7 @@ public class PaymentService {
 
         // Refund 레코드 생성/갱신 REQUESTED
         Refund refund = Refund.request(payment, refundAmount, request.reason());
-        refund = auditTxService.saveRefundRequested(refund);
+        auditTxService.saveRefundRequested(refund);
 
         // PortOne Cancel 호출해서 전액 환불 (fullCancel)
         PortOneCancelResponse cancelResponse;

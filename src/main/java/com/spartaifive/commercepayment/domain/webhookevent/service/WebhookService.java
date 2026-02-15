@@ -44,7 +44,7 @@ public class WebhookService {
         }
 
         Webhook webhook = new Webhook(webhookId, paymentId, receivedAt);
-        Webhook savedWebhook = webhookRepository.save(webhook);
+        auditTxService.savedWebhookReceived(webhook);
 
         // 2) paymentId로 PortOne 결제 조회
         //    - status / amount 확인
@@ -60,14 +60,14 @@ public class WebhookService {
 //            validationService.updatePaymentConfirmed(paymentId);
 
             paymentService.syncFromPortOneWebhook(paymentId, portOne);
-            auditTxService.markWebhookProcessed(savedWebhook);
+            auditTxService.markWebhookProcessed(webhookId);
             log.info(
                     "[PORTONE_WEBHOOK] processed successfully. webhookId={}, paymentId={}",
                     webhookId,
                     paymentId
             );
         } catch (Exception e) {
-            auditTxService.markWebhookFailed(savedWebhook);
+            auditTxService.markWebhookFailed(webhookId);
             log.error(
                     "[PORTONE_WEBHOOK] processed failed. webhookId={}, paymentId={}",
                     webhookId,
