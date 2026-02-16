@@ -1,6 +1,6 @@
 package com.spartaifive.commercepayment.domain.point.service;
 
-import com.spartaifive.commercepayment.common.constatns.Constants;
+import com.spartaifive.commercepayment.common.constants.Constants;
 import com.spartaifive.commercepayment.common.util.DatabaseCleaner;
 import com.spartaifive.commercepayment.domain.order.entity.Order;
 import com.spartaifive.commercepayment.domain.order.entity.OrderProduct;
@@ -22,7 +22,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.util.Pair;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;

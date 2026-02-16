@@ -26,7 +26,6 @@ public class WebhookService {
     private final WebhookRepository webhookRepository;
     private final PortOneClient portOneClient;
     private final PaymentService paymentService;
-    private final WebhookValidationService validationService;
     private final AuditTxService auditTxService;
 
     @Transactional
@@ -62,14 +61,14 @@ public class WebhookService {
 //            validationService.updatePaymentConfirmed(paymentId);
 
             paymentService.syncFromPortOneWebhook(paymentId, portOne);
-            auditTxService.markWebhookProcessed(savedWebhook);
+            auditTxService.markWebhookProcessed(webhookId);
             log.info(
                     "[PORTONE_WEBHOOK] processed successfully. webhookId={}, paymentId={}",
                     webhookId,
                     paymentId
             );
         } catch (Exception e) {
-            auditTxService.markWebhookFailed(savedWebhook);
+            auditTxService.markWebhookFailed(webhookId);
             log.error(
                     "[PORTONE_WEBHOOK] processed failed. webhookId={}, paymentId={}",
                     webhookId,

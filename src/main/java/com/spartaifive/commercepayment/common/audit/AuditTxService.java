@@ -39,6 +39,7 @@ public class AuditTxService {
     public void savedWebhookReceived(Webhook webhook) {
         webhookRepository.save(webhook);
     }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markWebhookProcessed(String webhookId) {
         Webhook webhook = webhookRepository.findByWebhookId(webhookId).orElseThrow(
