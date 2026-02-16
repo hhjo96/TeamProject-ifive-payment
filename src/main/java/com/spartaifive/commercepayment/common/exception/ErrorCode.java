@@ -53,7 +53,7 @@ public enum ErrorCode {
     // ===== 외부 연동(PortOne) =====
     ERR_PORTONE_RESPONSE_NULL(HttpStatus.BAD_GATEWAY, "PortOne 응답이 null 입니다"),
     ERR_PORTONE_PAYMENT_NOT_PAID(HttpStatus.CONFLICT, "PortOne 결제가 확정 상태가 아닙니다"),
-    Err_PORTONE_PAYMENT_NOT_READY(HttpStatus.CONFLICT, "PortOne 결제가 대기 상태가 아닙니다"),
+    ERR_PORTONE_PAYMENT_NOT_READY(HttpStatus.CONFLICT, "PortOne 결제가 대기 상태가 아닙니다"),
     ERR_PORTONE_API_FAILED(HttpStatus.BAD_GATEWAY, "PortOne API 호출이 실패했습니다"),
 
     // ===== 웹훅(Webhook) =====
