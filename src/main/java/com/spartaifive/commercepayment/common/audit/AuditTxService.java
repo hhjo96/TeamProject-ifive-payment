@@ -17,31 +17,31 @@ public class AuditTxService {
     private final WebhookRepository webhookRepository;
 
     // ---- Refund ----
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional()
     public void markRefundFailed(Refund refund, String message) {
         refund.fail(message);
         refundRepository.save(refund);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional()
     public void markRefundCompleted(Refund refund) {
         refund.complete();
         refundRepository.save(refund);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional()
     public Refund saveRefundRequested(Refund refund) {
         return refundRepository.save(refund);
     }
 
     // ---- Webhook Event ----
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional()
     public void markWebhookProcessed(Webhook webhook) {
         webhook.processed();
         webhookRepository.save(webhook);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional()
     public void markWebhookFailed(Webhook webhook) {
         webhook.failed();
         webhookRepository.save(webhook);
