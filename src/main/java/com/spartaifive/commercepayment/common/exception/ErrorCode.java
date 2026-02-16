@@ -50,6 +50,7 @@ public enum ErrorCode {
     ERR_PAYMENT_ALREADY_REFUNDED(HttpStatus.CONFLICT, "이미 환불된 결제입니다"),
     ERR_ORDER_ALREADY_REFUNDED(HttpStatus.CONFLICT, "환불된 주문은 재결제 할 수 없습니다"),
     ERR_PORTONE_PAYMENT_ID_MISMATCH(HttpStatus.CONFLICT, "이미 다른 portonePaymentId로 처리된 결제입니다"),
+    ERR_PAYMENT_STATUS_TRANSITION_INVALID(HttpStatus.CONFLICT, "결제 상태 전이가 불가능합니다"),
 
     // ===== 환불(Refund) =====
     ERR_REFUND_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 환불 이력이 존재합니다"),

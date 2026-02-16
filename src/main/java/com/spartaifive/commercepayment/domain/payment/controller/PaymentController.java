@@ -2,8 +2,6 @@ package com.spartaifive.commercepayment.domain.payment.controller;
 
 import com.spartaifive.commercepayment.common.auth.AuthUtil;
 import com.spartaifive.commercepayment.common.response.DataResponse;
-import com.spartaifive.commercepayment.domain.order.service.OrderService;
-import com.spartaifive.commercepayment.domain.payment.dto.request.ConfirmPaymentRequest;
 import com.spartaifive.commercepayment.domain.payment.dto.request.PaymentAttemptRequest;
 import com.spartaifive.commercepayment.domain.payment.dto.request.RefundRequest;
 import com.spartaifive.commercepayment.domain.payment.dto.response.ConfirmPaymentResponse;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/payments")
 public class PaymentController {
     private final PaymentService paymentService;
-    private final OrderService orderService;
 
     @PostMapping("/attempt")
     public ResponseEntity<DataResponse<PaymentAttemptResponse>> createPayment(
@@ -32,7 +29,7 @@ public class PaymentController {
         Long userId = AuthUtil.getCurrentUserId();
         PaymentAttemptResponse response = paymentService.createPayment(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(DataResponse.success(HttpStatus.CREATED.name(), response));
+                .body(DataResponse.success(String.valueOf(HttpStatus.CREATED.value()), response));
     }
 
     @PostMapping("/{paymentId}/confirm")
@@ -41,7 +38,7 @@ public class PaymentController {
         Long userId = AuthUtil.getCurrentUserId();
         ConfirmPaymentResponse response = paymentService.confirmByPaymentId(userId, paymentId);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(DataResponse.success(HttpStatus.OK.name(), response));
+                .body(DataResponse.success(String.valueOf(HttpStatus.OK.value()), response));
     }
 
     @PostMapping("/{paymentId}/refund")
@@ -51,6 +48,6 @@ public class PaymentController {
         RefundResponse response = paymentService.refundOrder(userId, paymentId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(DataResponse.success(HttpStatus.OK.name(), response));
+                .body(DataResponse.success(String.valueOf(HttpStatus.OK.value()), response));
     }
 }

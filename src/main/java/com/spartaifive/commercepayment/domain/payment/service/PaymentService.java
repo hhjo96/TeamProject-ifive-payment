@@ -11,7 +11,6 @@ import com.spartaifive.commercepayment.domain.order.entity.OrderProduct;
 import com.spartaifive.commercepayment.domain.order.entity.OrderStatus;
 import com.spartaifive.commercepayment.domain.order.repository.OrderProductRepository;
 import com.spartaifive.commercepayment.domain.order.repository.OrderRepository;
-import com.spartaifive.commercepayment.domain.payment.dto.request.ConfirmPaymentRequest;
 import com.spartaifive.commercepayment.domain.payment.dto.request.PaymentAttemptRequest;
 import com.spartaifive.commercepayment.domain.payment.dto.request.RefundRequest;
 import com.spartaifive.commercepayment.domain.payment.dto.response.*;
@@ -76,20 +75,6 @@ public class PaymentService {
         return PaymentAttemptResponse.from(savedPayment);
     }
 
-    @Transactional
-    public ConfirmPaymentResponse confirmByPaymentId(Long userId, String paymentId) {
-        Payment payment = paymentRepository.findLatestReadyByMerchantPaymentId(paymentId).orElseThrow(
-                () -> new ServiceErrorException(ERR_PAYMENT_NOT_READY)
-        );
-
-        if (!payment.getUserId().equals(userId)) {
-            throw new ServiceErrorException(ERR_PAYMENT_OWNER_MISMATCH);
-        }
-
-        ConfirmPaymentRequest request = new ConfirmPaymentRequest(paymentId, payment.getOrder().getId());
-        return confirmPayment(userId, request);
-    }
-
     /**
      * 결제 확정(Confirm)
      * - Payment 조회 (merchantPaymentId 또는 paymentId 기준)
@@ -105,23 +90,11 @@ public class PaymentService {
      * - 결제 확정 결과 Response DTO 반환
      */
     @Transactional
-    public ConfirmPaymentResponse confirmPayment(Long userId, ConfirmPaymentRequest request) {
-        // merchantPaymentId, orderId null값 검증
-        if (userId == null)  {
-            throw new ServiceErrorException(ERR_INVALID_REQUEST, "userId는 필수입니다");
-        }
-        if (request.merchantPaymentId() == null || request.merchantPaymentId().isBlank()) {
-            throw new ServiceErrorException(ERR_NOT_VALID_VALUE, "merchantPaymentId는 필수입니다");
-        }
-
-        // merchantPaymentId로 결제 조회
-        Payment payment = paymentRepository.findByMerchantPaymentId(request.merchantPaymentId()).orElseThrow(
-                () -> new ServiceErrorException(ERR_PAYMENT_NOT_FOUND));
-
-        // orderId 매칭 검증
-        if (!payment.getOrder().getId().equals(request.orderId())) {
-            throw new ServiceErrorException(ERR_PAYMENT_ORDER_MISMATCH);
-        }
+    public ConfirmPaymentResponse confirmByPaymentId(Long userId, String merchantPaymentId) {
+        // 결제 조회
+        Payment payment = paymentRepository.findLatestByMerchantPaymentId(merchantPaymentId).orElseThrow(
+                () -> new ServiceErrorException(ERR_PAYMENT_NOT_FOUND)
+        );
 
         // 결제 소유자 검증
         if (!payment.getUserId().equals(userId)) {
@@ -133,17 +106,28 @@ public class PaymentService {
             return ConfirmPaymentSuccessResponse.from(payment);
         }
 
+        // 결제 대기 상태인지 검증
         if (payment.getPaymentStatus() != PaymentStatus.READY) {
             throw new ServiceErrorException(ERR_PAYMENT_NOT_READY);
         }
 
+        // 주문 조회
+        Long orderId = payment.getOrder().getId();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ServiceErrorException(ERR_ORDER_NOT_FOUND));
+
+        // 주문 상태 검증
+        if (order.getStatus() == OrderStatus.REFUNDED) {
+            throw new ServiceErrorException(ERR_ORDER_ALREADY_REFUNDED);
+        }
+
         // PortOne 결제 조회
-        PortOnePaymentResponse portOne = portOneClient.getPayment(request.merchantPaymentId());
+        PortOnePaymentResponse portOne = portOneClient.getPayment(merchantPaymentId);
         if (portOne == null) {
             throw new ServiceErrorException(ERR_PORTONE_RESPONSE_NULL);
         }
 
-        // 결제 상태 검증
+        // PortOne 결제 상태 검증
         if (!portOne.isPaid()) { // 결제 확정이 아니면 실패
             payment.fail(portOne.transactionId());
             Payment failedPayment = paymentRepository.save(payment);
@@ -155,11 +139,16 @@ public class PaymentService {
         BigDecimal actualAmount = requireActualAmount(portOne);
         validatePaymentAmount(payment, actualAmount, portOne.transactionId());
 
+        // portonePaymentId(transactionId) 멱등성/불일치 검증
+        if (payment.getPortonePaymentId() != null
+                && !payment.getPortonePaymentId().isBlank()
+                && !payment.getPortonePaymentId().equals(portOne.transactionId())) {
+            throw new ServiceErrorException(ERR_PORTONE_PAYMENT_ID_MISMATCH);
+        }
+
         // 재고 검증 및 차감
-        Order order = payment.getOrder();
         List<OrderProduct> orderProducts = getOrderProducts(order);
         validateAndDecreaseStock(orderProducts, payment, portOne.transactionId());
-
 
         // 결제 확정 및 상태 전이
         return applyPaidTransition(payment, order, portOne, actualAmount);
