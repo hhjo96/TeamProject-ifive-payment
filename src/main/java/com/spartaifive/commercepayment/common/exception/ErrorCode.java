@@ -7,6 +7,9 @@ public enum ErrorCode {
     ERR_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "요청이 올바르지 않습니다"),
     ERR_NOT_VALID_VALUE(HttpStatus.BAD_REQUEST, "유효하지 않은 값입니다"),
     ERR_INTERNAL_SERVER(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다"),
+    ERR_INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "요청 파라미터 형식이 올바르지 않습니다"),
+    ERR_JSON_PARSE_ERROR(HttpStatus.BAD_REQUEST, "요청 본문(JSON) 형식이 올바르지 않습니다"),
+    ERR_DATA_INTEGRITY_VIOLATION(HttpStatus.CONFLICT, "데이터 무결성 제약을 위반했습니다"),
 
     // ===== 인증/인가(Security) =====
     ERR_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다"),
@@ -50,7 +53,13 @@ public enum ErrorCode {
     // ===== 외부 연동(PortOne) =====
     ERR_PORTONE_RESPONSE_NULL(HttpStatus.BAD_GATEWAY, "PortOne 응답이 null 입니다"),
     ERR_PORTONE_PAYMENT_NOT_PAID(HttpStatus.CONFLICT, "PortOne 결제가 확정 상태가 아닙니다"),
-    ERR_PORTONE_API_FAILED(HttpStatus.BAD_GATEWAY, "PortOne 환불 API 호출이 실패했습니다");
+    Err_PORTONE_PAYMENT_NOT_READY(HttpStatus.CONFLICT, "PortOne 결제가 대기 상태가 아닙니다"),
+    ERR_PORTONE_API_FAILED(HttpStatus.BAD_GATEWAY, "PortOne API 호출이 실패했습니다"),
+
+    // ===== 웹훅(Webhook) =====
+    ERR_WEBHOOK_SIGNATURE_INVALID(HttpStatus.UNAUTHORIZED, "웹훅 서명 검증에 실패했습니다"),
+    ERR_WEBHOOK_STATE_MISMATCH(HttpStatus.CONFLICT, "주문과 결제의 상태가 일치하지 않습니다"),
+    ERR_WEBHOOK_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "결제 금액 정합성 검증에 실패했습니다");
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -15,5 +15,4 @@ public class ServiceErrorException extends RuntimeException {
         super(overrideMessage);
         this.errorCode = errorCode;
     }
-
 }
