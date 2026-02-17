@@ -1,8 +1,11 @@
 package com.spartaifive.commercepayment.domain.point.service;
 
+import com.spartaifive.commercepayment.domain.order.repository.OrderRepository;
 import com.spartaifive.commercepayment.domain.payment.entity.Payment;
 import com.spartaifive.commercepayment.domain.payment.entity.PaymentStatus;
 import com.spartaifive.commercepayment.domain.payment.repository.PaymentRepository;
+import com.spartaifive.commercepayment.domain.point.dto.MembershipUpdateInfo;
+import com.spartaifive.commercepayment.domain.point.dto.PointUpdateInfo;
 import com.spartaifive.commercepayment.domain.point.entity.Point;
 import com.spartaifive.commercepayment.domain.point.entity.PointAudit;
 import com.spartaifive.commercepayment.domain.point.entity.PointAuditType;
@@ -32,10 +35,11 @@ public class PointSupportService {
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
     private final PointRepository pointRepository;
+    private final OrderRepository orderRepository;
     private final PointAuditRepository pointAuditRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateUserMembership(
+    public void updateUserMembership2(
             Long userId,
             List<MembershipGrade> membershipGrades,
             LocalDateTime paymentConfirmDay
@@ -73,8 +77,41 @@ public class PointSupportService {
         }
     }
 
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateUserPoints(
+    public void updateUserMembership(
+            List<Long> userIds,
+            List<MembershipGrade> membershipGrades,
+            LocalDateTime paymentConfirmDay
+    ) {
+        List<MembershipUpdateInfo> updateInfos = pointRepository.getMembershipUpdateInfo(
+                userIds, paymentConfirmDay);
+
+        List<User> users = new ArrayList<>();
+
+        for (MembershipUpdateInfo info : updateInfos) {
+            User user = info.user();
+
+            MembershipGrade userMembership = null;
+
+            for (MembershipGrade membershipGrade : membershipGrades) {
+                if (info.confirmedPaymentTotal().compareTo(membershipGrade.getRequiredPurchaseAmount()) <= 0) {
+                    userMembership = membershipGrade;
+                    break;
+                }
+            }
+
+            if (userMembership != null) {
+                user.updateMembership(userMembership);
+                users.add(user);
+            }
+        }
+
+        userRepository.saveAll(users);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateUserPoints2(
             Long userId,
             List<MembershipGrade> membershipGrades,
             LocalDateTime paymentConfirmDay
@@ -121,6 +158,52 @@ public class PointSupportService {
         pointAuditRepository.saveAll(audits);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateUserPoints(
+            List<Long> userIds,
+            List<MembershipGrade> membershipGrades,
+            LocalDateTime paymentConfirmDay
+    ) {
+        List<PointUpdateInfo> updateInfos = pointRepository.getPointUpdateInfos(
+                userIds, paymentConfirmDay);
+
+        List<Point> pointsToSave = new ArrayList<>();
+        List<PointAudit> audits = new ArrayList<>();
+        
+        for (PointUpdateInfo info : updateInfos) {
+            if (info.membershipGrade() == null) {
+                continue;
+            }
+
+            Point point = info.point();
+            MembershipGrade membership = info.membershipGrade();
+            Payment payment = info.payment();
+
+            BigDecimal pointAmount = getPointAmountPerPurchase(
+                    point.getParentPayment().getActualAmount(),
+                    membership.getRate()
+            );
+
+            point.initPointAmount(pointAmount);
+            point.updatePointStatus(PointStatus.CAN_BE_SPENT);
+
+            PointAudit audit = new PointAudit(
+                    userRepository.getReferenceById(point.getOwnerUser().getId()),
+                    orderRepository.getReferenceById(point.getParentOrder().getId()),
+                    payment,
+                    point,
+                    PointAuditType.POINT_BECAME_READY,
+                    pointAmount
+            );
+
+            audits.add(audit);
+            pointsToSave.add(point);
+        }
+
+        pointRepository.saveAll(pointsToSave);
+        pointAuditRepository.saveAll(audits);
+    }
+
     @Transactional(readOnly = true)
     public BigDecimal calculateUserPoints(
             Long userId, 
@@ -150,7 +233,11 @@ public class PointSupportService {
         return total;
     }
 
-    public BigDecimal getPointAmountPerPurchase(
+    // ============
+    // UTIL들
+    // ============
+
+    public static BigDecimal getPointAmountPerPurchase(
             BigDecimal paymentAmount,
             Long rate
     ) {
