@@ -77,8 +77,9 @@ public class PaymentService {
                 tmp = expectedAmount.subtract(request.pointsToUse());
             }
             if (tmp.compareTo(BigDecimal.valueOf(1000)) < 0) {
-                throw new IllegalArgumentException(
-                        String.format("포인트를 제외, %s원을 결제할려고 하십니다. 1000원 이하의 결제는 불가능 합니다", tmp)
+                throw new ServiceErrorException(
+                        ERR_PAYMENT_AMOUNT_TOO_LOW,
+                        String.format("결제 금액 %s원이 최소 결제 금액 1000원 보다 적습니다", tmp)
                 );
             }
         }
@@ -236,7 +237,7 @@ public class PaymentService {
 
             if (!LocalDateTime.now().isBefore(canRefundBefore)) {
                 // TODO: 환불 가능 기간을 고객이 읽기 쉽게 만들어 돌려주기
-                throw new IllegalStateException("환불 가능한 시기를 지나 환불이 불가능 합니다");
+                throw new ServiceErrorException(ERR_REFUND_TIMEOUT);
             }
         }
 
