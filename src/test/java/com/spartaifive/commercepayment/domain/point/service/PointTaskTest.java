@@ -188,6 +188,16 @@ public class PointTaskTest {
                 assertThat(pointSupportService.calculateUserPoints(user3.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(3000));
                 assertThat(pointSupportService.calculateUserPoints(user4.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(7500));
 
+                assertThat(user1.getPointsReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(10));
+                assertThat(user2.getPointsReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(500));
+                assertThat(user3.getPointsReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(3000));
+                assertThat(user4.getPointsReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(7500));
+
+                assertThat(user1.getPointsNotReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(0));
+                assertThat(user2.getPointsNotReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(0));
+                assertThat(user3.getPointsNotReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(0));
+                assertThat(user4.getPointsNotReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(0));
+
                 tx.commit();
             } finally {
                 em.close();
@@ -242,6 +252,7 @@ public class PointTaskTest {
 
                 assertThat(user1.getMembershipGrade().getName()).isEqualTo(membershipGradeRepository.findByName("NORMAL").get().getName());
                 assertThat(pointSupportService.calculateUserPoints(user1.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(10));
+                assertThat(user1.getPointsReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(10));
 
                 tx.commit();
             } finally {
@@ -279,6 +290,8 @@ public class PointTaskTest {
 
                 assertThat(user1.getMembershipGrade().getName()).isEqualTo(membershipGradeRepository.findByName("NORMAL").get().getName());
                 assertThat(pointSupportService.calculateUserPoints(user1.getId(), true)).isEqualByComparingTo(BigDecimal.valueOf(10));
+                assertThat(user1.getPointsReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(10));
+                assertThat(user1.getPointsNotReadyToSpend()).isEqualByComparingTo(BigDecimal.valueOf(1500));
 
                 tx.commit();
             } finally {
