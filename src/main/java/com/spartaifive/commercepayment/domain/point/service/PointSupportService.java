@@ -1,5 +1,7 @@
 package com.spartaifive.commercepayment.domain.point.service;
 
+import com.spartaifive.commercepayment.common.exception.ErrorCode;
+import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
 import com.spartaifive.commercepayment.domain.order.repository.OrderRepository;
 import com.spartaifive.commercepayment.domain.payment.entity.Payment;
 import com.spartaifive.commercepayment.domain.payment.entity.PaymentStatus;
@@ -45,8 +47,7 @@ public class PointSupportService {
             LocalDateTime paymentConfirmDay
     ) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new RuntimeException(String.format(
-                        "%s id의 고객을 찾지 못했습니다",userId))
+                () -> new ServiceErrorException(ErrorCode.ERR_USER_NOT_FOUND)
         );
 
         List<Payment> payments = paymentRepository.findByUserId(user.getId());
@@ -117,8 +118,7 @@ public class PointSupportService {
             LocalDateTime paymentConfirmDay
     ) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new RuntimeException(String.format(
-                        "%s id의 고객을 찾지 못했습니다",userId))
+                () -> new ServiceErrorException(ErrorCode.ERR_USER_NOT_FOUND)
         );
 
         MembershipGrade membership = user.getMembershipGrade();
@@ -210,8 +210,7 @@ public class PointSupportService {
             boolean confirmedOnly
     ) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new RuntimeException(String.format(
-                        "%s id의 고객을 찾지 못했습니다",userId))
+                () -> new ServiceErrorException(ErrorCode.ERR_USER_NOT_FOUND)
         );
 
         List<Point> points = pointRepository.findPointByOwnerUser_Id(userId);

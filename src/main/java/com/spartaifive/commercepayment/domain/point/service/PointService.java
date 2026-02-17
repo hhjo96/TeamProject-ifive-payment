@@ -1,5 +1,7 @@
 package com.spartaifive.commercepayment.domain.point.service;
 
+import com.spartaifive.commercepayment.common.exception.ErrorCode;
+import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
 import com.spartaifive.commercepayment.domain.order.entity.Order;
 import com.spartaifive.commercepayment.domain.order.entity.OrderStatus;
 import com.spartaifive.commercepayment.domain.order.repository.OrderRepository;
@@ -56,12 +58,16 @@ public class PointService {
 
         // 포인트 생성시 결제는 완료여야 합니다.
         if (!payment.getPaymentStatus().equals(PaymentStatus.PAID)) {
-            throw new RuntimeException("포인트는 확정된 결제로만 생성됩니다.");
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_POINT_FAILED_TO_CREATE_POINT, 
+                    "포인트는 확정된 결제에서만 생성 가능합니다");
         }
 
         // 포인트 생성시 주문은 완료여야 합니다.
         if (!order.getStatus().equals(OrderStatus.COMPLETED)) {
-            throw new RuntimeException("포인트는 확정된 주문에서만 생성됩니다.");
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_POINT_FAILED_TO_CREATE_POINT, 
+                    "포인트는 확정된 주문에서만 생성 가능합니다");
         }
 
         Point point = new Point(
@@ -89,14 +95,18 @@ public class PointService {
             BigDecimal pointAmount
     ) {
         if (pointAmount.compareTo(orderTotalPrice) > 0) {
-            throw new IllegalArgumentException("주문 총액보다 포인트를 더 사용할 수는 없습니다");
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_POINT_POINT_EXCEEDS_PAYMENT
+            );
         }
 
         BigDecimal userPoints = pointSupportService.calculateUserPoints(userId, true);
 
         if (pointAmount.compareTo(userPoints) > 0) {
-            throw new IllegalArgumentException(
-                    String.format("유저의 잔액 포인트(%s)가 부족하여 (%s)의 포인트를 사용할 수 없습니다.", userPoints, pointAmount)
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_POINT_INSUFFICIENT_POINT,
+                    String.format("유저의 잔액 포인트(%s)가 부족하여 (%s)의 포인트를 사용할 수 없습니다",
+                        userPoints, pointAmount)
             );
         }
 
@@ -127,22 +137,28 @@ public class PointService {
 
         User user = getUserById(userId);
 
-        // 포인트 생성시 결제는 완료여야 합니다.
+        // 포인트 소비시 결제는 완료여야 합니다.
         if (!payment.getPaymentStatus().equals(PaymentStatus.PAID)) {
-            throw new RuntimeException("포인트는 확정된 결제로만 생성됩니다.");
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_POINT_FAILED_TO_SPEND_POINT, 
+                    "포인트는 확정된 결제에서만 소비 가능합니다");
         }
 
-        // 포인트 생성시 주문은 완료여야 합니다.
+        // 포인트 소비시 주문은 완료여야 합니다.
         if (!order.getStatus().equals(OrderStatus.COMPLETED)) {
-            throw new RuntimeException("포인트는 확정된 주문에서만 생성됩니다.");
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_POINT_FAILED_TO_SPEND_POINT, 
+                    "포인트는 확정된 주문에서만 소비 가능합니다");
         }
 
         // 유저한테 쓸 포인트가 있긴 한지 확인
         BigDecimal userPoints = pointSupportService.calculateUserPoints(userId, true);
 
         if (userPoints.compareTo(pointToSpend) < 0) {
-            throw new IllegalArgumentException(
-                    String.format("유저의 잔액 포인트(%s)가 부족하여 (%s)의 포인트를 사용할 수 없습니다.", userPoints, pointToSpend)
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_POINT_INSUFFICIENT_POINT,
+                    String.format("유저의 잔액 포인트(%s)가 부족하여 (%s)의 포인트를 사용할 수 없습니다",
+                        userPoints, pointToSpend)
             );
         }
 
@@ -209,18 +225,18 @@ public class PointService {
     private Payment getPaymentById(Long paymentId) {
         return paymentRepository.findById(paymentId)
                 .orElseThrow(() -> 
-                        new IllegalStateException(String.format("%s 아이디의 결제는 존재하지 않습니다", paymentId)));
+                        new ServiceErrorException(ErrorCode.ERR_PAYMENT_NOT_FOUND));
     }
 
     private Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> 
-                        new IllegalStateException(String.format("%s 아이디의 주문은 존재하지 않습니다", orderId)));
+                        new ServiceErrorException(ErrorCode.ERR_ORDER_NOT_FOUND));
     }
 
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> 
-                        new IllegalStateException(String.format("%s 아이디의 고객은 존재하지 않습니다", userId)));
+                        new ServiceErrorException(ErrorCode.ERR_USER_NOT_FOUND));
     }
 }
