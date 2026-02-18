@@ -30,6 +30,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    //aws deployment
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-parameter-store:4.0.0-RC1'
+
+    //health check
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     // Jackson for JSON processing (explicitly declared for PortOne integration)
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 

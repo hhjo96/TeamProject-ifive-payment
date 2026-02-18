@@ -1,6 +1,10 @@
 spring:
   application:
     name: commerce-payment-system
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
 
   # 클라이언트 API 계약 설정 파일 import
   config:
@@ -34,7 +38,7 @@ portone:
     id: ${PORTONE_STORE_ID:your-store-id}
   channel:
     kg-inicis: ${PORTONE_CHANNEL_KG:your-kg-inicis-channel-key}
-    toss: ${PORTONE_CHANNEL_TOSS:your-toss-channel-key}
+ #   toss: ${PORTONE_CHANNEL_TOSS:your-toss-channel-key}
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:commercehub-secret-key-for-demo-please-change-this-in-production-environment}
