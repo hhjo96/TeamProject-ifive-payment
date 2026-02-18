@@ -1,6 +1,7 @@
 package com.spartaifive.commercepayment.domain.order.service;
 
 import com.spartaifive.commercepayment.common.exception.ErrorCode;
+import com.spartaifive.commercepayment.common.exception.ServiceDataErrorException;
 import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
 import com.spartaifive.commercepayment.domain.order.dto.request.AddOrderRequest;
 import com.spartaifive.commercepayment.domain.order.dto.response.GetManyOrdersResponse;
@@ -69,8 +70,12 @@ public class OrderService {
         }
 
         if (products.size() < req.getOrderProducts().size()) {
-            throw new ServiceErrorException(
-                    ErrorCode.ERR_PRODUCTS_NOT_AVAILABLE
+            for (Product p : products) {
+                productIdToReq.remove(p.getId());
+            }
+            throw new ServiceDataErrorException(
+                    ErrorCode.ERR_PRODUCTS_NOT_AVAILABLE,
+                    List.copyOf(productIdToReq.keySet())
             );
         }
 

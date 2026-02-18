@@ -2,8 +2,6 @@ package com.spartaifive.commercepayment.domain.order.entity;
 
 import com.spartaifive.commercepayment.common.exception.ErrorCode;
 import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
-import com.spartaifive.commercepayment.domain.order.customexception.InvalidOrderPriceException;
-import com.spartaifive.commercepayment.domain.order.customexception.InvalidOrderStatusException;
 import com.spartaifive.commercepayment.domain.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
