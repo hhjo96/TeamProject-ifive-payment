@@ -15,6 +15,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.spartaifive.commercepayment.common.exception.ErrorCode;
+import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
+
 @Getter
 @Entity
 @Table(name = "products")
@@ -31,8 +34,8 @@ public class Product {
 
     @NotNull
     @Min(0)
-    // 이렇게 된다면 99,999,999.99 원이 저희 쇼핑몰의 최대 금액이 됩니다.
-    @Column(precision = 10, scale = 2, nullable = false) 
+    // 이렇게 된다면 9,999,999,999,999.99 원이 저희 쇼핑몰의 최대 금액이 됩니다.
+    @Column(precision = 15, scale = 2, nullable = false) 
     private BigDecimal price;
 
     @NotNull
@@ -81,17 +84,17 @@ public class Product {
 
     public void decreaseStock(Long quantity) {
         if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException("차감 수량은 0보다 커야합니다");
+            throw new ServiceErrorException(ErrorCode.ERR_PRODUCT_FAILED_TO_DECREASE_STOCK);
         }
         if (this.stock < quantity) {
-            throw new IllegalStateException("재고가 부족합니다 stock=" + this.stock + ", quantity=" + quantity);
+            throw new ServiceErrorException(ErrorCode.ERR_NOT_ENOUGH_STOCK);
         }
         this.stock -= quantity;
     }
 
     public void increaseStock(Long quantity) {
         if (quantity == null || quantity <= 0) {
-            throw new IllegalArgumentException("증가 수량은 0보다 커야합니다");
+            throw new ServiceErrorException(ErrorCode.ERR_PRODUCT_FAILED_TO_INCREASE_STOCK);
         }
         this.stock += quantity;
     }

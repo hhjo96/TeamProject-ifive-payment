@@ -1,10 +1,8 @@
 package com.spartaifive.commercepayment.domain.order.service;
 
-import com.spartaifive.commercepayment.domain.order.customexception.EmptyOrderException;
-import com.spartaifive.commercepayment.domain.order.customexception.NotEnoughStockException;
-import com.spartaifive.commercepayment.domain.order.customexception.OrderAccessDeniedException;
-import com.spartaifive.commercepayment.domain.order.customexception.OrderNotFoundException;
-import com.spartaifive.commercepayment.domain.order.customexception.ProductsNotAvailableException;
+import com.spartaifive.commercepayment.common.exception.ErrorCode;
+import com.spartaifive.commercepayment.common.exception.ServiceDataErrorException;
+import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
 import com.spartaifive.commercepayment.domain.order.dto.request.AddOrderRequest;
 import com.spartaifive.commercepayment.domain.order.dto.response.GetManyOrdersResponse;
 import com.spartaifive.commercepayment.domain.order.dto.response.GetOrderResponse;
@@ -45,7 +43,7 @@ public class OrderService {
     @Transactional
     public GetOrderResponse addOrder(AddOrderRequest req, Long userId) {
         if (req.getOrderProducts().size() <= 0) {
-            throw new EmptyOrderException();
+            throw new ServiceErrorException(ErrorCode.ERR_EMPTY_ORDER);
         }
 
         // 주문 정규화
@@ -66,7 +64,8 @@ public class OrderService {
 
         // 주문 상품의 갯수와 실제 상품의 갯수가 다를 경우 에러 반환
         if (products.size() > req.getOrderProducts().size()) {
-            throw new IllegalStateException(
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_INTERNAL_SERVER,
                     "데이터베이스에서 예상보다 많은 상품이 조회되었습니다. 시스템 관리자에게 문의하세요");
         }
 
@@ -74,9 +73,9 @@ public class OrderService {
             for (Product p : products) {
                 productIdToReq.remove(p.getId());
             }
-            throw new ProductsNotAvailableException(
-                "주문할려는 상품을 전부 주문 할 수 없습니다",
-                List.copyOf(productIdToReq.keySet())
+            throw new ServiceDataErrorException(
+                    ErrorCode.ERR_PRODUCTS_NOT_AVAILABLE,
+                    List.copyOf(productIdToReq.keySet())
             );
         }
 
@@ -84,12 +83,8 @@ public class OrderService {
         for (final Product p : products) {
             Long quantity = productIdToReq.get(p.getId()).getQuantity();
             if (p.getStock() < quantity) {
-                throw new NotEnoughStockException(String.format(
-                    "주문할려는 상품 %s의 재고(%s)보다 주문 갯수(%s)가 더 많습니다.",
-                    p.getName(),
-                    p.getStock(),
-                    quantity
-                ));
+                throw new ServiceErrorException(
+                        ErrorCode.ERR_NOT_ENOUGH_STOCK);
             }
         }
 
@@ -135,10 +130,10 @@ public class OrderService {
     @Transactional(readOnly = true)
     public GetOrderResponse getOrder(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId).orElseThrow(()->
-                new OrderNotFoundException(orderId));
+                new ServiceErrorException(ErrorCode.ERR_ORDER_NOT_FOUND));
 
         if (!order.getUser().getId().equals(userId)) {
-            throw new OrderAccessDeniedException("주문은 단건 조회는 본인의 주문만 할 수 있습니다.");
+            throw new ServiceErrorException(ErrorCode.ERR_ORDER_ACCESS_DENIED);
         }
 
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(order.getId());

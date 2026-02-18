@@ -29,8 +29,8 @@ public class OrderProduct {
 
     @NotNull
     @Min(0)
-    // 이렇게 된다면 99,999,999.99 원이 저희 쇼핑몰의 최대 금액이 됩니다.
-    @Column(precision = 10, scale = 2, nullable = false) 
+    // 이렇게 된다면 9,999,999,999,999.99 원이 저희 쇼핑몰의 최대 금액이 됩니다.
+    @Column(precision = 15, scale = 2, nullable = false) 
     private BigDecimal productPrice;
 
     @NotNull
