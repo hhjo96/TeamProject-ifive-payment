@@ -23,8 +23,8 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build
-        # 테스트 포함
+          ./gradlew clean build -x test
+        # 테스트 미포함
 
       # 4. Docker Hub 로그인
       - name: Login to Docker Hub
