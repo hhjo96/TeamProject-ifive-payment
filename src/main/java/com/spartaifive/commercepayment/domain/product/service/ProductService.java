@@ -3,16 +3,19 @@ package com.spartaifive.commercepayment.domain.product.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
 import com.spartaifive.commercepayment.domain.product.entity.ProductStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.spartaifive.commercepayment.domain.product.dto.GetManyProductsResponse;
-import com.spartaifive.commercepayment.domain.product.dto.GetProductResponse;
+import com.spartaifive.commercepayment.domain.product.dto.response.GetManyProductsResponse;
+import com.spartaifive.commercepayment.domain.product.dto.response.GetProductResponse;
 import com.spartaifive.commercepayment.domain.product.entity.Product;
 import com.spartaifive.commercepayment.domain.product.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
+
+import static com.spartaifive.commercepayment.common.exception.ErrorCode.ERR_PRODUCT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +26,7 @@ public class ProductService {
     public GetProductResponse getProduct(Long productId) {
         // TODO: 이에 관련 에러 생성
         Product product = productRepository.findById(productId).orElseThrow(
-                ()-> new RuntimeException("상품을 찾을 수 없습니다.")
+                ()-> new ServiceErrorException(ERR_PRODUCT_NOT_FOUND)
         );
 
         return GetProductResponse.of(product);

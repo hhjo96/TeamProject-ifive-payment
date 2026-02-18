@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spartaifive.commercepayment.common.response.DataResponse;
-import com.spartaifive.commercepayment.domain.product.dto.GetManyProductsResponse;
-import com.spartaifive.commercepayment.domain.product.dto.GetProductResponse;
+import com.spartaifive.commercepayment.domain.product.dto.response.GetManyProductsResponse;
+import com.spartaifive.commercepayment.domain.product.dto.response.GetProductResponse;
 import com.spartaifive.commercepayment.domain.product.service.ProductService;
 
 import lombok.AccessLevel;
@@ -27,19 +27,17 @@ public class ProductController {
     ) {
         GetProductResponse res = productService.getProduct(productId);
 
-        // TODO: 무슨 코드를 넣을지 잘 모르겠네요
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(DataResponse.success("SUCCESS", res));
+            .body(DataResponse.success(String.valueOf(HttpStatus.OK.value()), res));
     }
 
     @GetMapping("/api/products")
     public ResponseEntity<DataResponse<List<GetManyProductsResponse>>> getManyProducts() {
         List<GetManyProductsResponse> res = productService.getManyProducts();
 
-        // TODO: 무슨 코드를 넣을지 잘 모르겠네요
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(DataResponse.success("SUCCESS", res));
+            .body(DataResponse.success(String.valueOf(HttpStatus.OK.value()), res));
     }
 }
