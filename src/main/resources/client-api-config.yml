@@ -144,22 +144,6 @@ api:
             - name : data
               type : array
               required : true
-              items :
-              - name: productId
-                type: number
-                required: true
-              - name: name
-                type: string
-                required: true
-              - name: stock
-                type: number
-                required: true
-              - name: status
-                type: string
-                required: true
-              - name: category
-                type: string
-                required: true
 
     create-order:
       url: /api/orders
