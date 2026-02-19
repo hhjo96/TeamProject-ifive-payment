@@ -50,11 +50,13 @@ public class WebhookService {
         try {
             //포트원과 데이터 확인
             PortOnePaymentResponse portOne = portOneClient.getPayment(paymentId);
+            log.info("여기까지 진행 1");
             if (portOne == null) {
                 throw new ServiceErrorException(ERR_PORTONE_RESPONSE_NULL);
             }
-
+            log.info("여기까지 진행 2");
             paymentService.syncFromPortOneWebhook(paymentId, portOne);
+            log.info("여기까지 진행 3");
             auditTxService.markWebhookProcessed(webhookId);
             log.info(
                     "[PORTONE_WEBHOOK] processed successfully. webhookId={}, paymentId={}",
