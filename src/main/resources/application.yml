@@ -59,7 +59,7 @@ app:
   # 고객의 포인트와 멤버쉽 정보를 업데이트 하는 시각
   # 기본적으로 새벽 3시
   schedules:
-    point-membership-batching : "*/30 * * * * *"
+    point-membership-batching : "*/5 * * * * *"
 
   # 고객인 환불을 할 수 있는 기간
   # 기본적으로 7일
