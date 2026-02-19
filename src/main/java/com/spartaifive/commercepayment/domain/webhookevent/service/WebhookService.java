@@ -1,6 +1,7 @@
 package com.spartaifive.commercepayment.domain.webhookevent.service;
 
 import com.spartaifive.commercepayment.common.audit.AuditTxService;
+import com.spartaifive.commercepayment.common.exception.PortOneApiException;
 import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
 import com.spartaifive.commercepayment.common.external.portone.PortOneClient;
 import com.spartaifive.commercepayment.common.external.portone.PortOnePaymentResponse;
@@ -63,7 +64,11 @@ public class WebhookService {
                     webhookId,
                     paymentId
             );
-        } catch (Exception e) {
+        } catch(PortOneApiException p) {
+            throw p;
+
+        }
+        catch (Exception e) {
             auditTxService.markWebhookFailed(webhookId);
             log.error(
                     "[PORTONE_WEBHOOK] processed failed. webhookId={}, paymentId={}",
