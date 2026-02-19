@@ -24,15 +24,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberShipInitializer implements ApplicationRunner {
     private final MembershipGradeRepository membershipGradeRepository;
 
-    @Value("${app.add-test-memberships.generous:false}")
+    @Value("${app.add-test-memberships.generous:true}")
     private boolean beGenerous;
 
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
         if (beGenerous) {
-            membershipGradeRepository.save(new MembershipGrade("NORMAL", 20L, BigDecimal.valueOf(5000)));
-            membershipGradeRepository.save(new MembershipGrade("VIP", 40L, BigDecimal.valueOf(10000)));
-            membershipGradeRepository.save(new MembershipGrade("VVIP", 50L, BigDecimal.valueOf(15000)));
+            membershipGradeRepository.save(new MembershipGrade("NORMAL", 100L, BigDecimal.valueOf(5000)));
+            membershipGradeRepository.save(new MembershipGrade("VIP", 100L, BigDecimal.valueOf(10000)));
+            membershipGradeRepository.save(new MembershipGrade("VVIP", 100L, BigDecimal.valueOf(15000)));
         }else {
             membershipGradeRepository.save(new MembershipGrade("NORMAL", 1L, BigDecimal.valueOf(50000)));
             membershipGradeRepository.save(new MembershipGrade("VIP", 3L, BigDecimal.valueOf(100000)));
