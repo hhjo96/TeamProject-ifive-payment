@@ -1,5 +1,6 @@
 package com.spartaifive.commercepayment.common.exception;
 
+import com.spartaifive.commercepayment.common.response.DataMessageResponse;
 import com.spartaifive.commercepayment.common.response.MessageResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,17 @@ public class GlobalExceptionHandler {
         ErrorCode code = e.getErrorCode();
         return ResponseEntity.status(code.httpStatus())
                 .body(MessageResponse.fail(code.name(), e.getMessage()));
+    }
+
+    /* ===========================
+       비즈니스 예외 - Service/Domain
+       Data 포함
+       =========================== */
+    @ExceptionHandler(ServiceDataErrorException.class)
+    public ResponseEntity<DataMessageResponse<?>> handleServiceError(ServiceDataErrorException e) {
+        ErrorCode code = e.getErrorCode();
+        return ResponseEntity.status(code.httpStatus())
+                .body(DataMessageResponse.fail(code.name(), e.getMessage(), e.getData()));
     }
 
     /* ===========================

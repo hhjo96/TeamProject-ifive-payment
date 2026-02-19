@@ -1,7 +1,7 @@
 package com.spartaifive.commercepayment.domain.order.entity;
 
-import com.spartaifive.commercepayment.domain.order.customexception.InvalidOrderPriceException;
-import com.spartaifive.commercepayment.domain.order.customexception.InvalidOrderStatusException;
+import com.spartaifive.commercepayment.common.exception.ErrorCode;
+import com.spartaifive.commercepayment.common.exception.ServiceErrorException;
 import com.spartaifive.commercepayment.domain.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -36,8 +36,8 @@ public class Order {
 
     @NotNull
     @Min(0)
-    // 이렇게 된다면 99,999,999.99 원이 저희 쇼핑몰의 최대 금액이 됩니다.
-    @Column(precision = 10, scale = 2, nullable = false) 
+    // 이렇게 된다면 9,999,999,999,999.99 원이 저희 쇼핑몰의 최대 금액이 됩니다.
+    @Column(precision = 15, scale = 2, nullable = false) 
     private BigDecimal totalPrice;
 
     @NotNull
@@ -70,9 +70,10 @@ public class Order {
         Objects.requireNonNull(user);
 
         if (totalPrice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new InvalidOrderPriceException(String.format(
-                    "가격을 %s로 설정할려고 합니다. 가격은 음수 일 수 없습니다.",
-                    totalPrice));
+            throw new ServiceErrorException(
+                    ErrorCode.ERR_INVALID_ORDER_PRICE,
+                    String.format("가격을 %s로 설정할려고 합니다. 가격은 음수 일 수 없습니다", totalPrice)
+            );
         }
 
         this.totalPrice = totalPrice;
@@ -82,8 +83,9 @@ public class Order {
 
     public void setStatusToRefund() {
         if (this.status != OrderStatus.COMPLETED) {
-            throw new InvalidOrderStatusException(
-                String.format("%s상태에서 %s상태로 바꿀 수 는 없습니다.",
+            throw new ServiceErrorException(
+                ErrorCode.ERR_INVALID_ORDER_STATUS,
+                String.format("%s상태에서 %s상태로 바꿀 수 는 없습니다",
                     this.status, OrderStatus.REFUNDED)
             );
         }
@@ -93,8 +95,9 @@ public class Order {
 
     public void setStatusToCompleted() {
         if (this.status != OrderStatus.PAYMENT_PENDING) {
-            throw new InvalidOrderStatusException(
-                String.format("%s상태에서 %s상태로 바꿀 수 는 없습니다.",
+            throw new ServiceErrorException(
+                ErrorCode.ERR_INVALID_ORDER_STATUS,
+                String.format("%s상태에서 %s상태로 바꿀 수 는 없습니다",
                     this.status, OrderStatus.COMPLETED)
             );
         }

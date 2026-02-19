@@ -28,6 +28,8 @@ public enum ErrorCode {
 
     // ===== 상품(Product) =====
     ERR_PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다"),
+    ERR_PRODUCT_FAILED_TO_DECREASE_STOCK(HttpStatus.INTERNAL_SERVER_ERROR, "상품 재고 차감에 실패했습니다"),
+    ERR_PRODUCT_FAILED_TO_INCREASE_STOCK(HttpStatus.INTERNAL_SERVER_ERROR, "상품 재고 증가에 실패했습니다"),
 
     // ===== 멤버십(Membership) =====
     ERR_MEMBERSHIP_GRADE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "기본 멤버십(NORMAL)을 찾을 수 없습니다"),

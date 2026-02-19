@@ -1,11 +1,12 @@
 package com.spartaifive.commercepayment.domain.order.service;
 
-import com.spartaifive.commercepayment.domain.order.customexception.ProductsNotAvailableException;
+import com.spartaifive.commercepayment.common.exception.ServiceDataErrorException;
 import com.spartaifive.commercepayment.domain.order.dto.request.AddOrderRequest;
 import com.spartaifive.commercepayment.domain.order.entity.Order;
 import com.spartaifive.commercepayment.domain.order.entity.OrderProduct;
 import com.spartaifive.commercepayment.domain.order.repository.OrderProductRepository;
 import com.spartaifive.commercepayment.domain.order.repository.OrderRepository;
+import com.spartaifive.commercepayment.common.exception.ErrorCode;
 import com.spartaifive.commercepayment.common.util.DatabaseCleaner;
 import com.spartaifive.commercepayment.domain.payment.entity.Payment;
 import com.spartaifive.commercepayment.domain.point.entity.Point;
@@ -128,8 +129,10 @@ public class OrderServiceTest {
         // when then
         try {
             orderService.addOrder(addOrderRequest, user.getId());
-        } catch (ProductsNotAvailableException e) {
-            assertThat(e.getUnAvailableProductIds()).containsExactlyInAnyOrder(product3.getId(), product5.getId(), product6.getId());
+        } catch (ServiceDataErrorException e) {
+            //noinspection unchecked
+            assertThat((List<Long>)e.getData()).containsExactlyInAnyOrder(product3.getId(), product5.getId(), product6.getId());
+            assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ERR_PRODUCTS_NOT_AVAILABLE);
         }
     }
 }
