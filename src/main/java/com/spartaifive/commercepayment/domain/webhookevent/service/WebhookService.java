@@ -64,18 +64,15 @@ public class WebhookService {
                     webhookId,
                     paymentId
             );
-        } catch(PortOneApiException p) {
-            throw p;
-
-        }
-        catch (Exception e) {
+        } catch (PortOneApiException e) {
             auditTxService.markWebhookFailed(webhookId);
             log.error(
                     "[PORTONE_WEBHOOK] processed failed. webhookId={}, paymentId={}",
                     webhookId,
                     paymentId
             );
-            throw new ServiceErrorException(ERR_WEBHOOK_PROCESS_FAILED); // 웹훅 재시도 유도
+            throw e;
+            //throw new ServiceErrorException(ERR_WEBHOOK_PROCESS_FAILED); // 웹훅 재시도 유도
         }
     }
 }
