@@ -62,6 +62,7 @@ public class SecurityConfig {
                     // 3) 공개 API
                     .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/portone-webhook").permitAll()
+                    .requestMatchers("/actuator/health").permitAll()
 
                     // 4) 인증 API
                     .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup","/api/auth/refresh").permitAll()
