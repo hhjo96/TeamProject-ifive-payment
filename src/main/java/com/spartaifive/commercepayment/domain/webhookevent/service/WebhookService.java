@@ -50,6 +50,7 @@ public class WebhookService {
         //    - 주문 금액과 비교
         try {
             //포트원과 데이터 확인
+            log.info("여기까지 진행 0");
             PortOnePaymentResponse portOne = portOneClient.getPayment(paymentId);
             log.info("여기까지 진행 1");
             if (portOne == null) {
