@@ -115,6 +115,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PortOneApiException.class)
     public ResponseEntity<MessageResponse<?>> handlePortOne(PortOneApiException e) {
         String msg = String.format("PortOne 오류(%s): %s", e.getErrorCode(), e.getErrorMessage());
+        log.error(msg);
         return ResponseEntity.status(e.getHttpStatus())
                 .body(MessageResponse.fail(ErrorCode.ERR_PORTONE_API_FAILED.name(), msg));
     }
