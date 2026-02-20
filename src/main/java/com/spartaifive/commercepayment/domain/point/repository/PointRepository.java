@@ -8,6 +8,7 @@ import com.spartaifive.commercepayment.domain.point.entity.Point;
 import com.spartaifive.commercepayment.domain.point.entity.PointStatus;
 import com.spartaifive.commercepayment.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 

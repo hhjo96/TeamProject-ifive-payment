@@ -94,7 +94,6 @@ public class PointService {
 
             user.updatePointsNotReadyToSpendClamped(currentPoints.add(toAdd));
         }
-
         pointRepository.save(point);
         pointAuditRepository.save(audit);
         userRepository.save(user);
