@@ -94,8 +94,13 @@ public class PointService {
 
             user.updatePointsNotReadyToSpendClamped(currentPoints.add(toAdd));
         }
-
-        pointRepository.save(point);
+        pointRepository.upsertPoint(
+                payment.getId(),
+                user.getId(),
+                amount,
+                PointStatus.ACTIVE.name()
+        );
+        //pointRepository.save(point);
         pointAuditRepository.save(audit);
         userRepository.save(user);
     }

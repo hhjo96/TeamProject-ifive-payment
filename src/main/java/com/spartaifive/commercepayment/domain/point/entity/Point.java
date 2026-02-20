@@ -35,7 +35,7 @@ public class Point {
 
     @NotNull
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "parent_payment_id", unique = true)
+    @JoinColumn(nullable = false, name = "parent_payment_id")
     Payment parentPayment;
 
     @NotNull
