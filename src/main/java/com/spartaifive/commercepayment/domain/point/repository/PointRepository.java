@@ -79,22 +79,4 @@ public interface PointRepository extends JpaRepository<Point, Long> {
             "GROUP BY u.id"
     )
     List<UserAndNotReadyPointsInfo> getUserAndNotReadyPointsInfo(@Param("userIds") Collection<Long> userIds);
-
-    @Modifying
-    @Query(value = """
-    INSERT INTO points
-    (parent_payment_id, owner_user_id, original_point_amount,
-     point_remaining, point_status, created_at, modified_at)
-    VALUES
-    (:paymentId, :userId, :amount,
-     :amount, :status, NOW(), NOW())
-    ON DUPLICATE KEY UPDATE
-        modified_at = NOW()
-    """, nativeQuery = true)
-    void upsertPoint(
-            @Param("paymentId") Long paymentId,
-            @Param("userId") Long userId,
-            @Param("amount") int amount,
-            @Param("status") String status
-    );
 }
