@@ -31,7 +31,7 @@ public class PointTasks {
     public void calculateMembershipAndReadyPoints() {
         LocalDateTime now = TimeService.getCurrentTime();
 
-        log.info("[POINT_TASK]: started updating user points and memberships");
+        //log.info("[POINT_TASK]: started updating user points and memberships");
 
         // TODO: 현재 시각을 기준으로 refund 기간 이전 결제를 환불 가능 결제로 칭합니다.
         // 하지만 현재 시각의 기준이 이 컴퓨터를 돌리고 있는 timezone을 기준으로 하기 때문에 명확하지 않은듯 합니다.
